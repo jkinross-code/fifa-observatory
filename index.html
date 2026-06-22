@@ -182,6 +182,14 @@
   /* Responsive tweaks */
   @media (max-width: 1200px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 900px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } .sidebar { width: 56px; min-width: 56px; } .nav-item span { display: none; } .nav-label { display: none; } }
+
+  /* Sortable table headers */
+  th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+  th.sortable:hover { color: var(--accent); }
+  th.sortable .sort-arrow { display: inline-block; margin-left: 4px; opacity: 0.4; font-size: 10px; }
+  th.sortable.sort-asc .sort-arrow::after { content: '↑'; opacity: 1; }
+  th.sortable.sort-desc .sort-arrow::after { content: '↓'; opacity: 1; }
+  th.sortable:not(.sort-asc):not(.sort-desc) .sort-arrow::after { content: '↕'; }
 </style>
 </head>
 <body>
@@ -215,6 +223,10 @@
       <div class="nav-item" onclick="showView('ethics')" id="nav-ethics">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
         <span>Ethics Ranking</span>
+      </div>
+      <div class="nav-item" onclick="showView('kits')" id="nav-kits">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>
+        <span>Kit Suppliers</span>
       </div>
     </div>
     <div class="nav-divider"></div>
@@ -264,10 +276,6 @@
     <div class="nav-divider"></div>
     <div class="nav-section">
       <div class="nav-label">Evidence Base</div>
-      <div class="nav-item" onclick="showView('kits')" id="nav-kits">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>
-        <span>Kit Suppliers</span>
-      </div>
       <div class="nav-item" onclick="showView('literature')" id="nav-literature">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         <span>Literature</span>
@@ -2521,6 +2529,7 @@ function renderSponsorsTable() {
     {label:'Alcohol',data:allByYear.map(a=>a.filter(c=>c.alc).length),backgroundColor:'rgba(139,92,246,0.7)'},
     {label:'Fossil',data:allByYear.map(a=>a.filter(c=>c.fossil).length),backgroundColor:'rgba(100,116,139,0.7)'},
   ], {xTitle:'Tournament year', yTitle:'Number of sponsors with flag'});
+  requestAnimationFrame(() => applySortableToView('companies'));
 }
 
 function renderCSHRankings() {
@@ -2604,6 +2613,7 @@ function renderCSHRankings() {
         <div style="font-size:11px;color:var(--text3);margin-top:8px">Extrapolated to 64 matches × 3 channels: estimated <strong style="color:var(--text)">~300–400 billion</strong> total impressions globally per tournament</div>
       </div>
     </div>`;
+  requestAnimationFrame(() => applySortableToView('csh'));
 }
 
 // Real ESG data from MSCI, Sustainalytics, CDP, Ethisphere (research 2026-06-21)
@@ -3646,6 +3656,8 @@ function showView(id) {
     case 'methodology': renderMethodologyTables(); break;
     case 'nations': renderNations(); break;
   }
+  // Apply sortable headers to all tables in the newly active view
+  requestAnimationFrame(() => applySortableToView(id));
 }
 
 // ===== SOCIAL MEDIA IMPACT =====
@@ -4763,6 +4775,7 @@ function renderKits() {
       <td style="font-size:11px;color:var(--text3);max-width:160px">${r.note}</td>
     </tr>`).join('')}
     </tbody></table></div>`;
+  requestAnimationFrame(() => applySortableToView('kits'));
 }
 
 // ===== LITERATURE =====
@@ -5355,6 +5368,7 @@ function renderNationsTournament() {
       <td><span style="font-size:11px;padding:2px 7px;border-radius:10px;background:rgba(16,185,129,0.12);color:#34d399">+${t.scores.phbp}</span></td>
       <td style="font-size:11px">${t.scores.hasWhoData ? '<span style="color:var(--green)">✓</span>' : '<span style="color:var(--amber)" title="No WHO data — fallback used">~</span>'}</td>
     </tr>`).join('');
+  requestAnimationFrame(() => applySortableToView('nations'));
 }
 
 function populateCountrySelect() {
@@ -5530,6 +5544,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderDashboard();
 });
+
+// ─── Universal table sort utility ───────────────────────────────────────────
+// Call makeSortable(table) on any <table> element after it is rendered.
+// Marks every <th> in the first <thead> row as sortable and wires click handlers.
+// Skip-cols: pass an array of 0-based column indices to leave unsortable (e.g. flag-pill columns).
+function makeSortable(table, skipCols) {
+  if (!table) return;
+  const skip = new Set(skipCols || []);
+  const thead = table.querySelector('thead tr');
+  if (!thead) return;
+  const ths = Array.from(thead.querySelectorAll('th'));
+  // State stored on the table element itself so re-renders can reset
+  if (!table._sortState) table._sortState = { col: -1, dir: 1 };
+
+  ths.forEach((th, ci) => {
+    if (skip.has(ci)) return;
+    if (!th.classList.contains('sortable')) {
+      th.classList.add('sortable');
+      th.innerHTML = th.innerHTML + '<span class="sort-arrow"></span>';
+    }
+    th.onclick = () => {
+      const st = table._sortState;
+      if (st.col === ci) st.dir *= -1; else { st.col = ci; st.dir = 1; }
+      ths.forEach((h, i) => { h.classList.remove('sort-asc','sort-desc'); });
+      th.classList.add(st.dir > 0 ? 'sort-asc' : 'sort-desc');
+
+      const tbody = table.querySelector('tbody');
+      if (!tbody) return;
+      // Collect rows — skip colspan "group header" rows
+      const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => {
+        const cells = r.querySelectorAll('td');
+        return cells.length > 1 && !r.querySelector('td[colspan]');
+      });
+      rows.sort((ra, rb) => {
+        const ca = ra.querySelectorAll('td')[ci];
+        const cb = rb.querySelectorAll('td')[ci];
+        if (!ca || !cb) return 0;
+        const ta = ca.textContent.trim();
+        const tb = cb.textContent.trim();
+        // Try numeric (strip currency/% symbols)
+        const na = parseFloat(ta.replace(/[^0-9.\-]/g,''));
+        const nb = parseFloat(tb.replace(/[^0-9.\-]/g,''));
+        if (!isNaN(na) && !isNaN(nb)) return (na - nb) * st.dir;
+        return ta.localeCompare(tb) * st.dir;
+      });
+      // Re-attach sorted rows (group headers stay at their DOM position — rows bubble below them)
+      rows.forEach(r => tbody.appendChild(r));
+    };
+  });
+}
+
+// Wire makeSortable to all rendered tables after each view switch
+function applySortableToView(viewId) {
+  const view = document.getElementById('view-' + viewId);
+  if (!view) return;
+  view.querySelectorAll('table').forEach(t => makeSortable(t));
+}
 </script>
 </body>
 </html>
