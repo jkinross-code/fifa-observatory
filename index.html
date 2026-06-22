@@ -577,90 +577,19 @@
           </div>
         </div>
 
-        <!-- OBSERVATORY OVERVIEW (original KPIs + charts) -->
-        <div class="section">
-          <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)">
-            🔭 Observatory Overview — All Tournaments 2006–2026
-          </div>
-          <div class="grid-4" id="kpi-grid" style="margin-bottom:24px">
-            <div class="card card-sm">
-              <div class="card-title">Total Sponsors</div>
-              <div class="card-value" id="kpi-sponsors">—</div>
-              <div class="card-sub">Across 6 tournaments (2006–2026)</div>
-            </div>
-            <div class="card card-sm">
-              <div class="card-title">HFSS / Alcohol Sponsors</div>
-              <div class="card-value" id="kpi-unhealthy">—</div>
-              <div class="card-sub">Products with documented health harms</div>
-              <div class="card-delta delta-up" id="kpi-unhealthy-pct"></div>
-            </div>
-            <div class="card card-sm">
-              <div class="card-title">Child Impressions (2018 UK)</div>
-              <div class="card-value" id="kpi-children">1.14B</div>
-              <div class="card-sub">Under-16 HFSS + alcohol (Alfayad 2022)</div>
-            </div>
-            <div class="card card-sm">
-              <div class="card-title">Estimated Sponsor Fees</div>
-              <div class="card-value" id="kpi-fees">$2.7B</div>
-              <div class="card-sub">2026 cycle FIFA commercial rights</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="grid-2">
-            <div class="card">
-              <div class="section-header">
-                <div>
-                  <div class="section-title">Sponsor Categories by Tournament</div>
-                  <div class="section-sub">HFSS, alcohol, fossil fuel, gambling flags</div>
-                </div>
-              </div>
-              <div class="chart-wrap"><canvas id="chart-sponsor-categories"></canvas></div>
-            </div>
-            <div class="card">
-              <div class="section-header">
-                <div>
-                  <div class="section-title">Commercial Rights Revenue</div>
-                  <div class="section-sub">FIFA marketing revenue USD millions</div>
-                </div>
-              </div>
-              <div class="chart-wrap"><canvas id="chart-revenue"></canvas></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="grid-2">
-            <div class="card">
-              <div class="section-header">
-                <div>
-                  <div class="section-title">Unhealthy Marketing Index</div>
-                  <div class="section-sub">UMI scores by tournament &amp; product category</div>
-                </div>
-              </div>
-              <div class="chart-wrap"><canvas id="chart-umi"></canvas></div>
-            </div>
-            <div class="card">
-              <div class="section-header">
-                <div>
-                  <div class="section-title">2018 UK Broadcast Impressions</div>
-                  <div class="section-sub">Total vs under-16 by product category (billions) — UK only, 13 matches, peer-reviewed source only</div>
-                </div>
-              </div>
-              <div class="chart-wrap"><canvas id="chart-impressions"></canvas></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="card">
-            <div class="section-title" style="margin-bottom:12px">Commercial Social Health (CSH) Score — Top Companies</div>
-            <div class="info-box amber" style="margin-bottom:16px">
-              ⚠ CSH Score is a composite metric estimating net population health impact of a company's advertising and sponsorship activities. Negative scores indicate net harm. <strong>Data completeness varies — scores marked with * are partially estimated.</strong>
-            </div>
-            <div id="csh-top-table" class="loading"><div class="spinner"></div>Computing scores…</div>
-          </div>
+        <!-- 2026 Sponsor danger list + PNHIS bar chart already rendered above -->
+        <!-- Hidden canvases needed by other tabs — rendered off-screen -->
+        <div style="display:none">
+          <canvas id="chart-sponsor-categories"></canvas>
+          <canvas id="chart-revenue"></canvas>
+          <canvas id="chart-umi"></canvas>
+          <canvas id="chart-impressions"></canvas>
+          <div id="kpi-sponsors"></div>
+          <div id="kpi-unhealthy"></div>
+          <div id="kpi-unhealthy-pct"></div>
+          <div id="kpi-children"></div>
+          <div id="kpi-fees"></div>
+          <div id="csh-top-table"></div>
         </div>
       </div>
 
@@ -2785,133 +2714,6 @@ function renderDashboard() {
     document.getElementById('bstat-worst-score').textContent = `PNHIS: ${worstSurviving.scores.pnhis} — extreme commercial health exposure`;
   }
 
-  // ---- KPIs (observatory overview) ----
-  const total = DATA.companies.length;
-  const unhealthy = DATA.companies.filter(c => c.hfss || c.alc || c.fossil || c.gamble).length;
-  document.getElementById('kpi-sponsors').textContent = total;
-  document.getElementById('kpi-unhealthy').textContent = unhealthy;
-  document.getElementById('kpi-unhealthy-pct').textContent = `${Math.round(unhealthy/total*100)}% of all sponsors`;
-
-  // Sponsor categories by tournament chart — all 5 harm categories
-  const tournaments = ['2006','2010','2014','2018','2022','2026'];
-  const hfssCounts  = tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.hfss).length);
-  const alcCounts   = tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.alc).length);
-  const fossilCounts= tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.fossil).length);
-  const gambleCounts= tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.gamble).length);
-  const techCounts  = tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.tech).length);
-  const cryptoCounts= tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.crypto).length);
-  makeBarChart('chart-sponsor-categories', tournaments, [
-    {label:'HFSS Food/Drinks', data:hfssCounts,  backgroundColor:'rgba(249,115,22,0.85)'},
-    {label:'Alcohol',          data:alcCounts,   backgroundColor:'rgba(139,92,246,0.85)'},
-    {label:'Fossil Fuel',      data:fossilCounts,backgroundColor:'rgba(100,116,139,0.85)'},
-    {label:'Gambling',         data:gambleCounts,backgroundColor:'rgba(236,72,153,0.85)'},
-    {label:'Technology',       data:techCounts,  backgroundColor:'rgba(59,130,246,0.6)'},
-    {label:'Crypto/Fintech',   data:cryptoCounts,backgroundColor:'rgba(16,185,129,0.8)'},
-  ], {xTitle:'World Cup tournament year', yTitle:'Number of sponsors', extra:{barPercentage:0.7, scales:{x:{stacked:false,title:{display:true,text:'World Cup tournament year',color:'#64748b',font:{size:11}}},y:{stacked:false,title:{display:true,text:'Number of sponsors',color:'#64748b',font:{size:11}}}}}});
-
-  // Revenue chart
-  makeBarChart('chart-revenue',
-    ['2006 cycle','2018 cycle','2022 cycle','2026 cycle'],
-    [{label:'FIFA Commercial Rights Revenue (USD M)', data:[714,1652,1795,2693],
-      backgroundColor:['rgba(59,130,246,0.6)','rgba(99,102,241,0.6)','rgba(139,92,246,0.6)','rgba(16,185,129,0.6)'],
-      borderColor:['#3b82f6','#6366f1','#8b5cf6','#10b981'], borderWidth:1}],
-    {legend:false, xTitle:'World Cup cycle', yTitle:'Revenue (USD millions)'}
-  );
-
-  // UMI chart — grouped by tournament, one dataset per harm category
-  {
-    const tournaments = ['FIFA World Cup 2006','FIFA World Cup 2010','FIFA World Cup 2014','FIFA World Cup 2018','FIFA World Cup 2022','FIFA World Cup 2026'];
-    const tLabels = ['2006','2010','2014','2018 (GB confirmed)','2022','2026'];
-    const categories = [
-      {key:'alcohol',    label:'Alcohol',     color:'rgba(139,92,246,0.75)',  border:'#8b5cf6'},
-      {key:'HFSS_food',  label:'HFSS Food',   color:'rgba(249,115,22,0.75)',  border:'#f97316'},
-      {key:'sugary_drink',label:'Sugary Drink',color:'rgba(16,185,129,0.75)', border:'#10b981'},
-      {key:'fossil_fuel',label:'Fossil Fuel',  color:'rgba(251,191,36,0.75)', border:'#fbbf24'},
-      {key:'gambling',   label:'Gambling',     color:'rgba(239,68,68,0.75)',   border:'#ef4444'},
-    ];
-    const umiRows = DATA.umi.filter(r => r.umi_score != null);
-    // For 2018 use GB confirmed rows (highest fidelity); for others use GLOBAL
-    const datasets = categories.map(cat => ({
-      label: cat.label,
-      data: tournaments.map(t => {
-        const gbRow = umiRows.find(r => r.tournament === t && r.category === cat.key && r.country === 'GB');
-        const glRow = umiRows.find(r => r.tournament === t && r.category === cat.key && r.country === 'GLOBAL');
-        const row = gbRow || glRow;
-        return row ? row.umi_score : null;
-      }),
-      backgroundColor: cat.color,
-      borderColor: cat.border,
-      borderWidth: 1,
-      skipNull: true,
-    }));
-    destroyChart('chart-umi');
-    charts['chart-umi'] = new Chart(document.getElementById('chart-umi'), {
-      type: 'bar',
-      data: {labels: tLabels, datasets},
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: {labels: {color:'#94a3b8', boxWidth:12}},
-          tooltip: {
-            backgroundColor:'#1a2235', borderColor:'#2a3650', borderWidth:1,
-            callbacks: {label: ctx => ctx.raw != null ? `${ctx.dataset.label}: ${ctx.raw}` : null}
-          }
-        },
-        scales: {
-          x: {ticks:{color:'#94a3b8'}, grid:{color:'rgba(42,54,80,0.5)'}},
-          y: {beginAtZero:true, ticks:{color:'#94a3b8'}, grid:{color:'rgba(42,54,80,0.5)'},
-              title:{display:true, text:'UMI Score', color:'#64748b', font:{size:11}}}
-        }
-      }
-    });
-  }
-
-  // Impressions chart — UK 2018 confirmed + estimated global totals by tournament
-  // Source: Alfayad 2022 (UK 2018 Tier A); all other values modelled (Tier D estimates)
-  makeBarChart('chart-impressions',
-    ['UK 2018\n(HFSS)', 'UK 2018\n(Alcohol)', 'Global 2018\n(HFSS est.)', 'Global 2018\n(Alc est.)', 'Global 2022\n(HFSS est.)', 'Global 2022\n(Alc est.)', 'Global 2026\n(HFSS est.)', 'Global 2026\n(Alc est.)'],
-    [
-      {
-        label:'Total impressions (billions)',
-        data:[7.5, 3.3, null, null, null, null, null, null],
-        backgroundColor:['rgba(249,115,22,0.85)','rgba(139,92,246,0.85)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)'],
-        borderColor:['#f97316','#8b5cf6','#f97316','#8b5cf6','#f97316','#8b5cf6','#f97316','#8b5cf6'],
-        borderWidth:1
-      },
-      {
-        label:'Estimated impressions (billions)',
-        data:[null, null, 37.5, 16.5, 40.9, 18.0, 66.5, 29.3],
-        backgroundColor:['rgba(249,115,22,0.85)','rgba(139,92,246,0.85)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)'],
-        borderColor:['#f97316','#8b5cf6','#f97316','#8b5cf6','#f97316','#8b5cf6','#f97316','#8b5cf6'],
-        borderWidth:1,
-        borderDash:[4,4]
-      },
-      {
-        label:'Under-16 impressions (billions)',
-        data:[0.759, 0.385, null, null, null, null, null, null],
-        backgroundColor:['rgba(249,115,22,0.35)','rgba(139,92,246,0.35)','rgba(0,0,0,0)','rgba(0,0,0,0)','rgba(0,0,0,0)','rgba(0,0,0,0)','rgba(0,0,0,0)','rgba(0,0,0,0)'],
-        borderColor:['#f97316','#8b5cf6','transparent','transparent','transparent','transparent','transparent','transparent'],
-        borderWidth:1
-      },
-    ],
-    {xTitle:'Market / tournament', yTitle:'Impressions (billions)', extra:{plugins:{legend:{display:true},tooltip:{callbacks:{label:ctx=>{const v=ctx.raw;return v==null?'No primary data':ctx.dataset.label+': '+v+'B';}}}}}},
-  );
-
-  // CSH top table
-  const allCompanies2026 = DATA.companies.filter(c => c.tournament.includes('2026'));
-  const scored = allCompanies2026.map(c => ({...c, csh: computeCSH(c)})).sort((a,b) => a.csh - b.csh);
-  const topHtml = `<div class="table-wrap"><table>
-    <thead><tr><th>#</th><th>Company</th><th>Industry</th><th title="Health harm categories: HFSS=High Fat Sugar Salt food; Alc=Alcohol; Fsl=Fossil Fuel; Gmb=Gambling">Flags</th><th title="Commercial Sponsorship &amp; Health score: −100 (maximum harm) to +100 (maximum benefit)">CSH Score</th><th>Impact Direction</th></tr></thead>
-    <tbody>${scored.map((c,i) => `<tr>
-      <td style="color:var(--text3)">${i+1}</td>
-      <td style="font-weight:600">${c.name}</td>
-      <td>${c.industry}</td>
-      <td>${flagPills(c)}</td>
-      <td><span class="score-pill ${cshClass(c.csh)}" style="font-size:13px">${c.csh}</span></td>
-      <td style="color:${cshColor(c.csh)}">${c.csh < -30 ? '⬇ Significant harm' : c.csh < 0 ? '⬇ Moderate harm' : c.csh < 10 ? '→ Neutral' : '⬆ Benefit'}</td>
-    </tr>`).join('')}
-    </tbody></table></div>`;
-  document.getElementById('csh-top-table').innerHTML = topHtml;
 }
 
 function flagPills(c) {
