@@ -183,6 +183,10 @@
   @media (max-width: 1200px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 900px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } .sidebar { width: 56px; min-width: 56px; } .nav-item span { display: none; } .nav-label { display: none; } }
 
+  /* Acronym tooltips in table headers */
+  th[title] { cursor: help; }
+  th[title] abbr, th abbr { text-decoration: underline dotted rgba(148,163,184,0.5); text-underline-offset: 3px; cursor: help; }
+
   /* Sortable table headers */
   th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
   th.sortable:hover { color: var(--accent); }
@@ -442,8 +446,8 @@
                   <th>Industry</th>
                   <th>Country</th>
                   <th>Health Flags</th>
-                  <th>CSH Score</th>
-                  <th>Est. Fee (USD M)</th>
+                  <th title="Commercial Sponsorship &amp; Health score: −100 (maximum harm) to +100 (maximum benefit)">CSH Score</th>
+                  <th title="Estimated annual sponsorship fee in US dollars (millions)">Est. Fee (USD M)</th>
                   <th>Website</th>
                 </tr></thead>
                 <tbody id="sponsors-tbody"></tbody>
@@ -1446,13 +1450,13 @@
                     <th>Country</th>
                     <th>Group</th>
                     <th>Round</th>
-                    <th>FIFA Rank</th>
-                    <th>PNHIS</th>
-                    <th>BHVI</th>
-                    <th>CED</th>
-                    <th>RGS</th>
-                    <th>PHBP</th>
-                    <th>Data</th>
+                    <th title="FIFA world ranking at time of tournament">FIFA Rank</th>
+                    <th title="Participating Nations Health Impact Score: composite index −100 to +25 estimating projected population health risk from commercial exposure during tournament participation">PNHIS</th>
+                    <th title="Baseline Health Vulnerability Index: normalised 0–100 score from WHO indicators (obesity, alcohol, NCD mortality, diabetes, inactivity, life expectancy, GDP per capita)">BHVI</th>
+                    <th title="Commercial Exposure Dose: matches played × tournament unhealthy marketing index per match × regulatory gap">CED</th>
+                    <th title="Regulatory Gap Score: 0–100 measure of how poorly a country regulates HFSS food, alcohol and gambling advertising (higher = less protection)">RGS</th>
+                    <th title="Positive Health Benefit Premium: bonus points (max +25) for physical activity benefit potential and economic benefit to the nation">PHBP</th>
+                    <th title="Data quality: ✓ = WHO data available; ~ = fallback estimate used">Data</th>
                   </tr></thead>
                   <tbody id="nations-tbody"></tbody>
                 </table>
@@ -2417,7 +2421,7 @@ function renderDashboard() {
   const allCompanies2026 = DATA.companies.filter(c => c.tournament.includes('2026'));
   const scored = allCompanies2026.map(c => ({...c, csh: computeCSH(c)})).sort((a,b) => a.csh - b.csh);
   const topHtml = `<div class="table-wrap"><table>
-    <thead><tr><th>#</th><th>Company</th><th>Industry</th><th>Flags</th><th>CSH Score</th><th>Impact Direction</th></tr></thead>
+    <thead><tr><th>#</th><th>Company</th><th>Industry</th><th title="Health harm categories: HFSS=High Fat Sugar Salt food; Alc=Alcohol; Fsl=Fossil Fuel; Gmb=Gambling">Flags</th><th title="Commercial Sponsorship &amp; Health score: −100 (maximum harm) to +100 (maximum benefit)">CSH Score</th><th>Impact Direction</th></tr></thead>
     <tbody>${scored.map((c,i) => `<tr>
       <td style="color:var(--text3)">${i+1}</td>
       <td style="font-weight:600">${c.name}</td>
@@ -2494,8 +2498,8 @@ function renderSponsorsTable() {
       <th style="${thStyle}" onclick="sortSponsors('industry')">Industry${sortArrow('industry')}</th>
       <th style="${thStyle}" onclick="sortSponsors('country')">Country${sortArrow('country')}</th>
       <th>Health Flags</th>
-      <th style="${thStyle}" onclick="sortSponsors('csh')">CSH Score${sortArrow('csh')}</th>
-      <th style="${thStyle}" onclick="sortSponsors('fee')">Est. Fee (USD M)${sortArrow('fee')}</th>
+      <th style="${thStyle}" title="Commercial Sponsorship &amp; Health score: −100 (maximum harm) to +100 (maximum benefit)" onclick="sortSponsors('csh')">CSH Score${sortArrow('csh')}</th>
+      <th style="${thStyle}" title="Estimated annual sponsorship fee in US dollars (millions)" onclick="sortSponsors('fee')">Est. Fee (USD M)${sortArrow('fee')}</th>
       <th>Website</th>`;
   }
 
@@ -2560,7 +2564,7 @@ function renderCSHRankings() {
     : csh < 10 ? 'Neutral'
     : 'Positive';
 
-  let html = '<div class="table-wrap"><table><thead><tr><th>Rank</th><th>Company</th><th>Industry</th><th>Flags</th><th>CSH Score</th><th>Impact</th></tr></thead><tbody>';
+  let html = '<div class="table-wrap"><table><thead><tr><th>Rank</th><th>Company</th><th>Industry</th><th>Flags</th><th title="Commercial Sponsorship &amp; Health score: −100 (maximum harm) to +100 (maximum benefit)">CSH Score</th><th>Impact</th></tr></thead><tbody>';
   Object.keys(byYear).sort((a,b) => parseInt(b)-parseInt(a)).forEach(yr => {
     html += `<tr><td colspan="6" style="background:var(--bg3);padding:10px 14px;font-weight:700;color:var(--accent);font-size:13px;border-bottom:2px solid var(--border)">🏆 FIFA World Cup ${yr}</td></tr>`;
     byYear[yr].forEach((c, i) => {
@@ -2754,7 +2758,7 @@ function renderEthics() {
   document.getElementById('ethics-table-wrap').innerHTML = `
     <div class="info-box" style="margin-bottom:16px">ESG data sourced from MSCI ESG Ratings, Sustainalytics Risk Scores, CDP Climate Disclosure, and Ethisphere "World's Most Ethical Companies" (2022–2024). Sustainalytics: lower = better. <strong>Unrated companies are private entities or state-owned — absence of rating ≠ absence of risk.</strong></div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Company</th><th>Industry</th><th>MSCI ESG</th><th>Sustainalytics Risk</th><th>CDP Climate</th><th>Ethisphere</th><th>ESG Risk Profile</th><th>CSH Score</th><th>Key Controversy</th></tr></thead>
+      <thead><tr><th>Company</th><th>Industry</th><th title="MSCI ESG Rating: AAA (best) to CCC (worst) — measures exposure to environmental, social and governance risks">MSCI ESG</th><th title="Sustainalytics ESG Risk Score: lower is better (0–40+). Measures unmanaged ESG risk">Sustainalytics Risk</th><th title="CDP Climate Disclosure Score: A (best) to D — measures corporate climate transparency and action">CDP Climate</th><th title="Ethisphere World's Most Ethical Companies designation — annual list of companies meeting ethics and compliance standards">Ethisphere</th><th title="Overall ESG risk classification based on MSCI, Sustainalytics and CDP scores">ESG Risk Profile</th><th title="Commercial Sponsorship &amp; Health score: −100 (maximum harm) to +100 (maximum benefit)">CSH Score</th><th>Key Controversy</th></tr></thead>
       <tbody>${rows.map(r => `<tr>
         <td style="font-weight:600">${r.name}</td>
         <td style="font-size:12px">${r.industry}</td>
@@ -3304,8 +3308,8 @@ function renderExposure() {
   <div class="table-wrap"><table>
     <thead><tr>
       <th>Tournament</th><th>Country</th><th>Category</th><th>Audience</th>
-      <th>Total Impressions (M)</th><th>Under-16 (M)</th><th>UMI Score</th>
-      <th>Data Status</th><th>Completeness</th><th>Source</th>
+      <th>Total Impressions (M)</th><th title="Estimated impressions among viewers aged under 16 (millions)">Under-16 (M)</th><th title="Unhealthy Marketing Index: log10(impressions+1) × harm weight × data completeness. Higher = greater unhealthy exposure.">UMI Score</th>
+      <th title="Data quality tier: A=peer-reviewed with impression counts; D=modelled estimate (lower bound)">Data Status</th><th title="Percentage of ideal data captured for this record (100% = full impression + child split data)">Completeness</th><th>Source</th>
     </tr></thead>
     <tbody>${rows.map(r => `<tr${r.audience==='child'?' style="background:rgba(6,182,212,0.05)"':''}>
       <td style="font-weight:600">${r.tournament.replace('FIFA World Cup ','')}</td>
@@ -3399,13 +3403,13 @@ function renderMethodologyTables() {
   el.innerHTML = `<div class="table-wrap"><table>
     <thead><tr>
       <th style="${thStyle}">Category</th>
-      <th style="${thStyle}">Base weight</th>
-      <th style="${thStyle}">Low weight</th>
-      <th style="${thStyle}">High weight</th>
-      <th style="${thStyle}">UMI (base)</th>
-      <th style="${thStyle}">UMI (low)</th>
-      <th style="${thStyle}">UMI (high)</th>
-      <th style="${thStyle}">Sensitivity range</th>
+      <th style="${thStyle}" title="Central harm weight used in the base-case UMI calculation">Base weight</th>
+      <th style="${thStyle}" title="Conservative (lower-bound) harm weight for sensitivity analysis">Low weight</th>
+      <th style="${thStyle}" title="Upper-bound harm weight for sensitivity analysis">High weight</th>
+      <th style="${thStyle}" title="Unhealthy Marketing Index using base harm weight">UMI (base)</th>
+      <th style="${thStyle}" title="Unhealthy Marketing Index using low (conservative) harm weight">UMI (low)</th>
+      <th style="${thStyle}" title="Unhealthy Marketing Index using high (upper-bound) harm weight">UMI (high)</th>
+      <th style="${thStyle}" title="Percentage difference between low and high UMI estimates — indicates how sensitive the score is to weight assumptions">Sensitivity range</th>
       <th style="${thStyle}">Rationale</th>
     </tr></thead>
     <tbody>${rows.map((r,i) => `<tr style="background:${i%2===0?'rgba(30,41,59,0.3)':'transparent'}">
@@ -3444,9 +3448,9 @@ function renderMethodologyTables() {
   el2.innerHTML = `<div class="table-wrap"><table>
     <thead><tr>
       <th style="${thStyle}">Data Gap</th>
-      <th style="${thStyle}">Category</th>
+      <th style="${thStyle}" title="Harmful product category: HFSS=High Fat Sugar Salt food; UMI=Unhealthy Marketing Index; CSH=Commercial Sponsorship &amp; Health">Category</th>
       <th style="${thStyle}">Tournament</th>
-      <th style="${thStyle}">Priority</th>
+      <th style="${thStyle}" title="Research priority: Critical=blocks primary analysis; High=materially affects UMI/CSH scores; Moderate/Low=useful but not essential">Priority</th>
       <th style="${thStyle}">Barrier</th>
       <th style="${thStyle}">Protocol / Route to Data</th>
       <th style="${thStyle}">Key Sources</th>
@@ -3515,7 +3519,7 @@ function renderUMITrend() {
 function renderCorrelations() {
   const rows = DATA.correlations;
   document.getElementById('correlations-table').innerHTML = `<div class="table-wrap"><table>
-    <thead><tr><th>Exposure</th><th>Outcome</th><th>Effect Size</th><th>Design</th><th>Country</th><th>Year</th><th>Confidence</th><th>Source</th></tr></thead>
+    <thead><tr><th>Exposure</th><th>Outcome</th><th title="Reported effect size: relative risk, odds ratio, incidence rate ratio, or percentage change depending on study design">Effect Size</th><th title="Study design: RCT=Randomised Controlled Trial; QE=Quasi-experimental; CS=Cross-sectional; SR=Systematic Review">Design</th><th>Country</th><th>Year</th><th title="Evidence confidence level based on study design, sample size, and replication: High / Moderate / Low">Confidence</th><th>Source</th></tr></thead>
     <tbody>${rows.map(r => `<tr>
       <td style="max-width:180px;font-size:12px">${r.exposure}</td>
       <td style="max-width:160px;font-size:12px">${r.outcome}</td>
@@ -3582,14 +3586,14 @@ function renderTournamentDetail(year) {
       <div class="card">
         <div class="section-title" style="margin-bottom:12px">Sponsors — ${year}</div>
         <div class="table-wrap"><table>
-          <thead><tr><th>Company</th><th>Tier</th><th>Industry</th><th>Flags</th><th>CSH</th></tr></thead>
+          <thead><tr><th>Company</th><th>Tier</th><th>Industry</th><th>Flags</th><th title="Commercial Sponsorship &amp; Health score: −100 (maximum harm) to +100 (maximum benefit)">CSH</th></tr></thead>
           <tbody>${cos.map(c=>{const csh=computeCSH(c);return`<tr><td style="font-weight:600">${c.name}</td><td style="font-size:11px;color:var(--text3)">${c.tier?.split(' - ')[0]||''}</td><td>${c.industry}</td><td>${flagPills(c)}</td><td><span class="score-pill ${cshClass(csh)}">${csh}</span></td></tr>`;}).join('')}
           </tbody></table></div>
       </div>
       <div class="card">
         <div class="section-title" style="margin-bottom:12px">Marketing Exposure Data</div>
         ${umiRows.length ? `<div class="table-wrap"><table>
-          <thead><tr><th>Category</th><th>Country</th><th>Impressions (M)</th><th>U16 (M)</th><th>UMI</th></tr></thead>
+          <thead><tr><th>Category</th><th>Country</th><th>Impressions (M)</th><th title="Estimated impressions among viewers aged under 16 (millions)">U16 (M)</th><th title="Unhealthy Marketing Index: log10(impressions+1) × harm weight × data completeness">UMI</th></tr></thead>
           <tbody>${umiRows.map(r=>`<tr><td>${r.category}</td><td>${r.country}</td><td>${r.total_imp||'—'}</td><td>${r.u16_imp||'—'}</td><td>${r.umi_score?`<span class="score-pill ${r.umi_score>3?'score-high':'score-med'}">${r.umi_score}</span>`:'—'}</td></tr>`).join('')}
           </tbody></table></div>`
           : `<div class="info-box amber">No quantified impression data available for ${year}. ${parseInt(year)<2018?'Pre-2018 academic data gap — no broadcast coding studies identified.':'Partial data — see Correlations view.'}</div>`}
@@ -3770,11 +3774,11 @@ function renderSocial() {
   const boolIcon = b => b ? '<span style="color:var(--green)">✓ Yes</span>' : '<span style="color:var(--red)">✗ No</span>';
   document.getElementById('platform-policy-table').innerHTML = `<table>
     <thead><tr>
-      <th>Platform</th><th>MAU (B)</th><th>Under-18 users</th>
-      <th>HFSS policy</th><th>HFSS enforced?</th>
+      <th>Platform</th><th title="Monthly Active Users (billions)">MAU (B)</th><th>Under-18 users</th>
+      <th title="High Fat Sugar Salt food advertising policy — restrictions on promoting unhealthy food">HFSS policy</th><th title="Whether the platform's HFSS (High Fat Sugar Salt) advertising policy is actively enforced">HFSS enforced?</th>
       <th>Alcohol policy</th><th>Alcohol enforced?</th>
-      <th>Ad transparency</th><th>Commercial ads covered?</th>
-      <th>WC 2022 unhealthy brands</th>
+      <th title="Whether the platform publishes a public ad transparency library showing who is advertising">Ad transparency</th><th title="Whether the ad transparency tool covers commercial (non-political) advertisements">Commercial ads covered?</th>
+      <th title="Number of unhealthy brands (HFSS, alcohol, gambling, fossil fuel) identified advertising around World Cup 2022 content">WC 2022 unhealthy brands</th>
     </tr></thead>
     <tbody>${PLATFORM_DATA.map(p=>`<tr>
       <td><span style="font-weight:700;color:${p.color==='#010101'||p.color==='#000000'||p.color==='#fffc00'?'var(--text)':p.color}">${p.name}</span><div style="font-size:10px;color:var(--text3)">${p.parent}</div></td>
@@ -3859,7 +3863,7 @@ function renderSocial() {
     </tr>`;
   });
   document.getElementById('audience-vulnerability-table').innerHTML=`<table>
-    <thead><tr><th>Platform</th><th>Under-18 share</th><th>WC unhealthy brands</th><th>HFSS enforcement</th><th>Alcohol enforcement</th><th>Ad transparency</th><th>Child exposure risk</th></tr></thead>
+    <thead><tr><th>Platform</th><th title="Estimated proportion of platform users aged under 18">Under-18 share</th><th title="Number of unhealthy brands (HFSS, alcohol, gambling, fossil fuel) advertising around World Cup content">WC unhealthy brands</th><th title="High Fat Sugar Salt food advertising enforcement — whether restrictions on promoting unhealthy food are actively applied">HFSS enforcement</th><th>Alcohol enforcement</th><th title="Whether the platform publishes a public ad transparency library">Ad transparency</th><th title="Overall child exposure risk rating based on under-18 user share, unhealthy brand presence, and enforcement gaps">Child exposure risk</th></tr></thead>
     <tbody>${vulnRows.join('')}</tbody></table>`;
 
   // Child exposure bar chart
@@ -4650,7 +4654,7 @@ function renderKits() {
   // Table
   // Adidas is FIFA Partner in all years covered
   document.getElementById('kits-table').innerHTML = `<table>
-    <thead><tr><th>#</th><th>National Team</th><th>Code</th><th>Confederation</th><th>Kit Brand</th><th>Brand HQ</th><th>Brand Tier</th><th>Also FIFA Sponsor?</th></tr></thead>
+    <thead><tr><th>#</th><th>National Team</th><th title="FIFA three-letter country code">Code</th><th title="Continental football confederation: UEFA=Europe; CONMEBOL=South America; CONCACAF=North/Central America &amp; Caribbean; CAF=Africa; AFC=Asia; OFC=Oceania">Confederation</th><th>Kit Brand</th><th title="Country where the kit brand is headquartered">Brand HQ</th><th title="Brand market tier: major=global brand with large market share; mid-tier=regional or growing brand; niche=specialist or national brand">Brand Tier</th><th title="Whether this kit brand also holds an official FIFA sponsorship deal (separate from national team kit contracts)">Also FIFA Sponsor?</th></tr></thead>
     <tbody>${rows.map((k,i) => {
       const alsoSponsor = k.brand === 'Adidas'
         ? '<span class="flag-pill flag-hfss" style="background:rgba(59,130,246,0.15);color:#60a5fa;border-color:rgba(59,130,246,0.3)">✓ FIFA Partner</span>'
@@ -4764,7 +4768,7 @@ function renderKits() {
     {company:'Diageo',fifahRole:'Tier 3 Regional Supporter',kitTeams:0,matchExposure:'Regional/US market activations',healthFlags:'🟣 Alcohol',csh:'−55',note:'Guinness, Johnnie Walker — spirits focused'},
   ];
   document.getElementById('dual-presence-table').innerHTML = `<div class="table-wrap"><table>
-    <thead><tr><th>Company</th><th>FIFA Role</th><th>Kit Teams</th><th>Match Exposure Scope</th><th>Health Flags</th><th>CSH</th><th>Notes</th></tr></thead>
+    <thead><tr><th>Company</th><th title="Official FIFA commercial relationship tier (Partner / World Cup Sponsor / Regional Supporter) or kit-only (no FIFA sponsorship)">FIFA Role</th><th title="Number of national teams supplied with playing kits at this tournament">Kit Teams</th><th title="Scope of brand visibility: perimeter boards appear in all matches; kit exposure only during that team's matches">Match Exposure Scope</th><th title="Health harm categories: HFSS=High Fat Sugar Salt food; Alcohol; Fossil Fuel; Gambling">Health Flags</th><th title="Commercial Sponsorship &amp; Health score: −100 (maximum harm) to +100 (maximum benefit)">CSH</th><th>Notes</th></tr></thead>
     <tbody>${dualPresence.map(r=>`<tr>
       <td style="font-weight:600">${r.company}</td>
       <td style="font-size:11px;color:var(--text3)">${r.fifahRole}</td>
@@ -5435,7 +5439,7 @@ function renderNationsCountry() {
   document.getElementById('nations-country-detail').innerHTML = `
     <div class="section-title" style="margin-bottom:12px">${flag(appearances[0].team)} ${appearances[0].team.name} — Tournament History</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Year</th><th>Round</th><th>FIFA Rank</th><th>PNHIS</th><th>BHVI</th><th>CED</th><th>RGS</th><th>Obesity %</th><th>Inactivity %</th><th>GDP/cap USD</th></tr></thead>
+      <thead><tr><th>Year</th><th>Round</th><th title="FIFA world ranking at time of tournament">FIFA Rank</th><th title="Participating Nations Health Impact Score: composite index −100 to +25">PNHIS</th><th title="Baseline Health Vulnerability Index (0–100): normalised WHO health indicators">BHVI</th><th title="Commercial Exposure Dose: matches × unhealthy marketing index × regulatory gap">CED</th><th title="Regulatory Gap Score (0–100): lack of HFSS/alcohol/gambling ad protection">RGS</th><th title="Adult obesity prevalence (%) at tournament baseline year — WHO GHO">Obesity %</th><th title="Physical inactivity prevalence (%) — WHO GHO">Inactivity %</th><th title="GDP per capita in US dollars — World Bank">GDP/cap USD</th></tr></thead>
       <tbody>${appearances.map(a=>`<tr>
         <td style="font-weight:600">${a.year}</td>
         <td>${roundBadge(a.team.round)}</td>
