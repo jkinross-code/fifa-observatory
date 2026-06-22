@@ -398,6 +398,14 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         <span>Dashboard</span>
       </div>
+      <div class="nav-item" onclick="showView('observatory')" id="nav-observatory">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Observatory Overview</span>
+      </div>
+      <div class="nav-item" onclick="showView('bracket')" id="nav-bracket">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/></svg>
+        <span>2026 Health Bracket</span>
+      </div>
     </div>
     <div class="nav-divider"></div>
     <div class="nav-section">
@@ -490,7 +498,7 @@
 
     <div class="content">
 
-      <!-- DASHBOARD VIEW -->
+      <!-- DASHBOARD VIEW — Landing Page -->
       <div class="view active" id="view-dashboard">
 
         <!-- HERO HEADER -->
@@ -508,8 +516,182 @@
           </div>
         </div>
 
-        <!-- MAIN BRACKET CARD -->
+        <!-- KPI SUMMARY -->
         <div class="section">
+          <div class="grid-4" style="margin-bottom:24px" id="dash-kpi-grid">
+            <div class="card card-sm">
+              <div class="card-title">Total Sponsors (All Tournaments)</div>
+              <div class="card-value" id="dash-kpi-total">—</div>
+              <div class="card-sub">Across six tournaments 2006–2026</div>
+            </div>
+            <div class="card card-sm">
+              <div class="card-title">Unhealthy Sponsors 2026</div>
+              <div class="card-value" id="dash-kpi-unhealthy" style="color:var(--red)">—</div>
+              <div class="card-sub" id="dash-kpi-unhealthy-pct"></div>
+            </div>
+            <div class="card card-sm">
+              <div class="card-title">Nations Still Competing</div>
+              <div class="card-value" id="dash-kpi-competing" style="color:var(--purple)">—</div>
+              <div class="card-sub">Progressed past group stage</div>
+            </div>
+            <div class="card card-sm">
+              <div class="card-title">Child Exposure Risk</div>
+              <div class="card-value" style="color:var(--orange);font-size:22px">EXTREME</div>
+              <div class="card-sub">Est. 2B+ under-16 impressions (2026)</div>
+            </div>
+          </div>
+
+          <!-- INTRO TEXT -->
+          <div class="card" style="margin-bottom:24px">
+            <div class="section-title" style="margin-bottom:10px">FIFA World Cup Commercial Social Health Observatory</div>
+            <p style="color:var(--text2);line-height:1.8;margin-bottom:10px">This observatory tracks the commercial health impact of FIFA World Cup sponsorship across six tournaments (2006–2026). It quantifies exposure to harmful marketing — HFSS food and drinks, alcohol, fossil fuels, and gambling — and measures the health vulnerability of participating nations using the <strong style="color:var(--text)">Participating Nations Health Impact Score (PNHIS)</strong>.</p>
+            <p style="color:var(--text3);font-size:13px">Data sources: WHO Global Health Observatory, World Bank, FIFA commercial disclosures, Alfayad et al. 2022 (broadcast impression data), regulatory assessments. Evidence tiers: A = confirmed data; D = modelled estimates.</p>
+          </div>
+
+          <!-- NAV CARDS -->
+          <div class="grid-3" style="margin-top:0">
+            <div class="card" style="cursor:pointer;border:1px solid var(--border);transition:border-color 0.2s" onclick="showView('observatory')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:24px;margin-bottom:8px">📊</div>
+              <div style="font-weight:700;margin-bottom:4px">Observatory Overview</div>
+              <div style="color:var(--text3);font-size:12px">All-tournament sponsor analysis, revenue trends, UMI charts, and CSH rankings across 2006–2026</div>
+            </div>
+            <div class="card" style="cursor:pointer;border:1px solid var(--border);transition:border-color 0.2s" onclick="showView('bracket')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:24px;margin-bottom:8px">⚽</div>
+              <div style="font-weight:700;margin-bottom:4px">2026 Health Impact Bracket</div>
+              <div style="color:var(--text3);font-size:12px">Live tournament bracket with PNHIS health scores for all 48 nations — updated as the tournament progresses</div>
+            </div>
+            <div class="card" style="cursor:pointer;border:1px solid var(--border);transition:border-color 0.2s" onclick="showView('csh')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:24px;margin-bottom:8px">☠</div>
+              <div style="font-weight:700;margin-bottom:4px">Sponsor CSH Rankings</div>
+              <div style="color:var(--text3);font-size:12px">Commercial Sponsorship & Health scores for all FIFA 2026 partners, ranked by harm potential</div>
+            </div>
+            <div class="card" style="cursor:pointer;border:1px solid var(--border);transition:border-color 0.2s" onclick="showView('exposure')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:24px;margin-bottom:8px">👁</div>
+              <div style="font-weight:700;margin-bottom:4px">Marketing Exposure</div>
+              <div style="color:var(--text3);font-size:12px">Broadcast impression data, UMI scores, and child exposure analysis across all tournaments</div>
+            </div>
+            <div class="card" style="cursor:pointer;border:1px solid var(--border);transition:border-color 0.2s" onclick="showView('countries')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:24px;margin-bottom:8px">🌍</div>
+              <div style="font-weight:700;margin-bottom:4px">Host Country Health</div>
+              <div style="color:var(--text3);font-size:12px">Longitudinal health trends in host nations — obesity, NCDs, alcohol, physical activity</div>
+            </div>
+            <div class="card" style="cursor:pointer;border:1px solid var(--border);transition:border-color 0.2s" onclick="showView('nations')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:24px;margin-bottom:8px">🏳</div>
+              <div style="font-weight:700;margin-bottom:4px">Nations Health Index</div>
+              <div style="color:var(--text3);font-size:12px">PNHIS scores for all 48 participating nations — health vulnerability and commercial exposure</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OBSERVATORY OVERVIEW VIEW -->
+      <div class="view" id="view-observatory">
+        <div class="section">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Observatory Overview — All Tournaments 2006–2026</div>
+              <div class="section-sub">Commercial health impact of FIFA World Cup sponsorship across six tournaments</div>
+            </div>
+          </div>
+          <!-- KPI cards row -->
+          <div class="grid-4" style="margin-bottom:24px">
+            <div class="card card-sm">
+              <div class="card-title">Total Sponsors Tracked</div>
+              <div class="card-value" id="kpi-sponsors">—</div>
+              <div class="card-sub">Across all six tournaments</div>
+            </div>
+            <div class="card card-sm">
+              <div class="card-title">Unhealthy Sponsors</div>
+              <div class="card-value" id="kpi-unhealthy" style="color:var(--red)">—</div>
+              <div class="card-sub" id="kpi-unhealthy-pct"></div>
+            </div>
+            <div class="card card-sm">
+              <div class="card-title">Child Exposure</div>
+              <div class="card-value" id="kpi-children" style="color:var(--orange)">High</div>
+              <div class="card-sub">Est. 2B+ u16 impressions (2026)</div>
+            </div>
+            <div class="card card-sm">
+              <div class="card-title">Total Commercial Rights</div>
+              <div class="card-value" id="kpi-fees" style="color:var(--amber)">$8.4B</div>
+              <div class="card-sub">Cumulative 2006–2026</div>
+            </div>
+          </div>
+          <!-- Charts grid -->
+          <div class="grid-2" style="margin-bottom:24px">
+            <div class="card">
+              <div class="section-title" style="margin-bottom:4px">Sponsor Categories by Tournament</div>
+              <div class="section-sub" style="margin-bottom:12px">Number of sponsors per harm category across all six tournaments</div>
+              <div class="chart-wrap"><canvas id="chart-sponsor-categories"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="section-title" style="margin-bottom:4px">Commercial Rights Revenue</div>
+              <div class="section-sub" style="margin-bottom:12px">FIFA World Cup commercial rights revenue by tournament cycle (USD millions)</div>
+              <div class="chart-wrap"><canvas id="chart-revenue"></canvas></div>
+            </div>
+          </div>
+          <div class="grid-2" style="margin-bottom:24px">
+            <div class="card">
+              <div class="section-title" style="margin-bottom:4px">Unhealthy Marketing Index (UMI)</div>
+              <div class="section-sub" style="margin-bottom:12px">Quantified exposure to harmful marketing across tournaments. UK 2018 = Tier A confirmed data; others = Tier D modelled estimates.</div>
+              <div class="chart-wrap"><canvas id="chart-umi"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="section-title" style="margin-bottom:4px">Broadcast Impression Estimates</div>
+              <div class="section-sub" style="margin-bottom:12px">HFSS and alcohol impressions. UK 2018 = Tier A (Alfayad 2022); global figures = Tier D modelled lower-bound estimates.</div>
+              <div class="chart-wrap"><canvas id="chart-impressions"></canvas></div>
+            </div>
+          </div>
+          <!-- CSH top table -->
+          <div class="card">
+            <div class="section-title" style="margin-bottom:4px">2026 Sponsors — Commercial Sponsorship & Health (CSH) Rankings</div>
+            <div class="section-sub" style="margin-bottom:14px">All FIFA 2026 sponsors ranked by CSH score. Score range: −100 (maximum harm) to +100 (benefit).</div>
+            <div id="csh-top-table"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2026 HEALTH IMPACT BRACKET VIEW -->
+      <div class="view" id="view-bracket">
+        <div class="section">
+
+          <!-- DATA FRESHNESS NOTE -->
+          <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+            <span style="font-size:16px">📡</span>
+            <div>
+              <span style="font-weight:600;color:var(--amber)">Live tournament data</span>
+              <span style="color:var(--text2);font-size:13px"> — Group stage results updated from BBC Sport / Wikipedia. Knockout round results update as matches are played. Last scraped: <span id="bracket-last-updated">June 22, 2026</span></span>
+            </div>
+          </div>
+
+          <!-- PNHIS EXPLANATION -->
+          <div class="card" style="margin-bottom:24px;border-left:4px solid var(--accent)">
+            <div class="section-title" style="margin-bottom:8px">What is the PNHIS Score?</div>
+            <p style="color:var(--text2);line-height:1.7;margin-bottom:12px">The <strong style="color:var(--text)">Participating Nations Health Impact Score (PNHIS)</strong> is a composite index measuring the burden of commercial health harm experienced by populations whose national team participates in the FIFA World Cup. It captures three negative dimensions and one protective dimension:</p>
+            <div class="grid-2" style="gap:12px;margin-bottom:12px">
+              <div style="background:var(--bg3);border-radius:8px;padding:14px">
+                <div style="font-weight:700;color:var(--orange);margin-bottom:6px">BHVI — Background Health Vulnerability Index (weight: 35%)</div>
+                <div style="color:var(--text2);font-size:13px">Baseline population health risk from obesity, alcohol consumption, physical inactivity, and NCD mortality. Higher BHVI = more vulnerable population.</div>
+              </div>
+              <div style="background:var(--bg3);border-radius:8px;padding:14px">
+                <div style="font-weight:700;color:var(--red);margin-bottom:6px">CED — Commercial Exposure Dose (weight: 40%)</div>
+                <div style="color:var(--text2);font-size:13px">Estimated total unhealthy marketing impressions delivered to the population, adjusted for regulatory strength. Higher regulatory protection = lower CED.</div>
+              </div>
+              <div style="background:var(--bg3);border-radius:8px;padding:14px">
+                <div style="font-weight:700;color:var(--purple);margin-bottom:6px">RGS — Regulatory Gap Score (weight: 25%)</div>
+                <div style="color:var(--text2);font-size:13px">Weakness of the nation's advertising regulations (HFSS food, alcohol, gambling). Low regulatory protection = high RGS harm score.</div>
+              </div>
+              <div style="background:var(--bg3);border-radius:8px;padding:14px">
+                <div style="font-weight:700;color:var(--green);margin-bottom:6px">PHBP — Public Health Benefit Potential (positive offset)</div>
+                <div style="color:var(--text2);font-size:13px">Protective factor. Credit for strong health infrastructure (high life expectancy, low inactivity, strong GDP). Partially offsets the harm score.</div>
+              </div>
+            </div>
+            <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:12px">
+              <div style="font-weight:600;color:var(--accent);margin-bottom:4px">Formula: PNHIS = −[(BHVI × 0.35) + (CED × 0.40) + (RGS × 0.25)] + PHBP</div>
+              <div style="color:var(--text3);font-size:12px">Range approximately −100 (extreme harm) to +25 (protective). Negative scores indicate net commercial health harm. Data sources: WHO Global Health Observatory, World Bank, regulatory assessments.</div>
+            </div>
+          </div>
+
+          <!-- MAIN BRACKET CARD -->
           <div class="card" style="padding:24px">
             <div style="text-align:center;margin-bottom:6px">
               <div style="font-size:20px;font-weight:800;letter-spacing:0.04em;color:#f59e0b">⚽ THE HEALTH IMPACT BRACKET — WHO SURVIVES?</div>
@@ -533,11 +715,9 @@
             <div style="font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;padding-left:4px">Knockout Stage — Teams that progressed beyond group stage</div>
             <div id="bracket-knockout" style="display:grid;grid-template-columns:1fr;gap:12px"></div>
           </div>
-        </div>
 
-        <!-- HEALTH RISK SECTION — 2 columns -->
-        <div class="section">
-          <div class="grid-2">
+          <!-- HEALTH RISK SECTION — 2 columns -->
+          <div class="grid-2" style="margin-top:20px">
             <div class="card">
               <div class="section-title" style="margin-bottom:4px">☣ Most Dangerous Sponsors Still in Play</div>
               <div class="section-sub" style="margin-bottom:14px">Sponsors of FIFA 2026 with worst CSH scores, still amplified by surviving teams</div>
@@ -545,15 +725,13 @@
             </div>
             <div class="card">
               <div class="section-title" style="margin-bottom:4px">📊 PNHIS — Surviving Teams</div>
-              <div class="section-sub" style="margin-bottom:14px">Health impact score for teams still in the tournament (round=TBD). Lower = higher risk.</div>
+              <div class="section-sub" style="margin-bottom:14px">Health impact score for teams still in the tournament (round=TBD or R32). Lower = higher risk.</div>
               <div class="chart-wrap" style="height:280px"><canvas id="chart-bracket-pnhis"></canvas></div>
             </div>
           </div>
-        </div>
 
-        <!-- STAT CARDS ROW -->
-        <div class="section">
-          <div class="grid-4" id="bracket-stats-grid">
+          <!-- STAT CARDS ROW -->
+          <div class="grid-4" id="bracket-stats-grid" style="margin-top:20px">
             <div class="card card-sm">
               <div class="card-title">Matches Played (est.)</div>
               <div class="card-value" id="bstat-matches">—</div>
@@ -575,21 +753,7 @@
               <div class="card-sub" id="bstat-worst-score"></div>
             </div>
           </div>
-        </div>
 
-        <!-- 2026 Sponsor danger list + PNHIS bar chart already rendered above -->
-        <!-- Hidden canvases needed by other tabs — rendered off-screen -->
-        <div style="display:none">
-          <canvas id="chart-sponsor-categories"></canvas>
-          <canvas id="chart-revenue"></canvas>
-          <canvas id="chart-umi"></canvas>
-          <canvas id="chart-impressions"></canvas>
-          <div id="kpi-sponsors"></div>
-          <div id="kpi-unhealthy"></div>
-          <div id="kpi-unhealthy-pct"></div>
-          <div id="kpi-children"></div>
-          <div id="kpi-fees"></div>
-          <div id="csh-top-table"></div>
         </div>
       </div>
 
@@ -2537,9 +2701,22 @@ function renderDashboard() {
   }));
 
   // ---- HERO STATS ----
-  const survivingTeams = teams2026.filter(t => t.round === 'TBD');
+  const survivingTeams = teams2026.filter(t => t.round !== 'GS');
   const eliminatedTeams = teams2026.filter(t => t.round === 'GS');
   document.getElementById('hero-competing').textContent = `🌍 ${survivingTeams.length} Nations Still Competing`;
+
+  // ---- DASHBOARD LANDING KPIs ----
+  const allTotal = DATA.companies.length;
+  const unhealthy2026 = DATA.companies.filter(c => c.tournament?.includes('2026') && (c.hfss || c.alc || c.fossil || c.gamble)).length;
+  const total2026 = DATA.companies.filter(c => c.tournament?.includes('2026')).length;
+  const dashKpiTotal = document.getElementById('dash-kpi-total');
+  const dashKpiUnhealthy = document.getElementById('dash-kpi-unhealthy');
+  const dashKpiUnhealthyPct = document.getElementById('dash-kpi-unhealthy-pct');
+  const dashKpiCompeting = document.getElementById('dash-kpi-competing');
+  if (dashKpiTotal) dashKpiTotal.textContent = allTotal;
+  if (dashKpiUnhealthy) dashKpiUnhealthy.textContent = unhealthy2026;
+  if (dashKpiUnhealthyPct) dashKpiUnhealthyPct.textContent = `${Math.round(unhealthy2026/total2026*100)}% of 2026 sponsors`;
+  if (dashKpiCompeting) dashKpiCompeting.textContent = survivingTeams.length;
 
   // ---- GROUP PODS ----
   const groups = {};
@@ -2560,6 +2737,8 @@ function renderDashboard() {
       const barCol = pnhisBarColor(t.scores.pnhis);
       const roundBadgeHtml = t.round === 'TBD'
         ? `<span class="tbd-badge-anim" style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;background:rgba(139,92,246,0.2);color:#a78bfa;border:1px solid rgba(139,92,246,0.35)">TBD</span>`
+        : t.round === 'R32'
+        ? `<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3)">✓ R32</span>`
         : `<span style="font-size:10px;font-weight:700;padding:2px 5px;border-radius:8px;background:rgba(100,116,139,0.15);color:#64748b;border:1px solid rgba(100,116,139,0.2)">${t.round}</span>`;
       return `<div class="group-team-row${eliminated ? ' eliminated' : ''}">
         <span class="group-team-flag">${t.flag}</span>
@@ -2582,7 +2761,7 @@ function renderDashboard() {
   // Round definitions: progressed = not GS
   const progressed = teams2026.filter(t => t.round !== 'GS');
   // categorise by round for display columns
-  const r16Teams  = progressed.filter(t => ['TBD','R16'].includes(t.round));
+  const r16Teams  = progressed.filter(t => ['TBD','R32','R16'].includes(t.round));
   const qfTeams   = progressed.filter(t => ['QF','SF','RU','W'].includes(t.round));
   const sfTeams   = progressed.filter(t => ['SF','RU','W'].includes(t.round));
   const finalTeams= progressed.filter(t => ['RU','W'].includes(t.round));
@@ -2656,7 +2835,7 @@ function renderDashboard() {
     </div>`).join('');
 
   // ---- PNHIS SURVIVING TEAMS BAR CHART ----
-  const surviving = teams2026.filter(t => t.round === 'TBD').sort((a,b) => a.scores.pnhis - b.scores.pnhis);
+  const surviving = teams2026.filter(t => t.round !== 'GS').sort((a,b) => a.scores.pnhis - b.scores.pnhis);
   destroyChart('chart-bracket-pnhis');
   makeBarChart('chart-bracket-pnhis',
     surviving.map(t => `${t.flag} ${t.name}`),
@@ -2714,6 +2893,111 @@ function renderDashboard() {
     document.getElementById('bstat-worst-score').textContent = `PNHIS: ${worstSurviving.scores.pnhis} — extreme commercial health exposure`;
   }
 
+}
+
+function renderObservatory() {
+  // KPIs
+  const total = DATA.companies.length;
+  const unhealthy = DATA.companies.filter(c => c.hfss || c.alc || c.fossil || c.gamble).length;
+  document.getElementById('kpi-sponsors').textContent = total;
+  document.getElementById('kpi-unhealthy').textContent = unhealthy;
+  document.getElementById('kpi-unhealthy-pct').textContent = `${Math.round(unhealthy/total*100)}% of all sponsors`;
+
+  // Sponsor categories chart
+  const tournaments = ['2006','2010','2014','2018','2022','2026'];
+  const hfssCounts  = tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.hfss).length);
+  const alcCounts   = tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.alc).length);
+  const fossilCounts= tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.fossil).length);
+  const gambleCounts= tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.gamble).length);
+  const techCounts  = tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.tech).length);
+  const cryptoCounts= tournaments.map(y => DATA.companies.filter(c => c.tournament.includes(y) && c.crypto).length);
+  makeBarChart('chart-sponsor-categories', tournaments, [
+    {label:'HFSS Food/Drinks', data:hfssCounts,  backgroundColor:'rgba(249,115,22,0.85)'},
+    {label:'Alcohol',          data:alcCounts,   backgroundColor:'rgba(139,92,246,0.85)'},
+    {label:'Fossil Fuel',      data:fossilCounts,backgroundColor:'rgba(100,116,139,0.85)'},
+    {label:'Gambling',         data:gambleCounts,backgroundColor:'rgba(236,72,153,0.85)'},
+    {label:'Technology',       data:techCounts,  backgroundColor:'rgba(59,130,246,0.6)'},
+    {label:'Crypto/Fintech',   data:cryptoCounts,backgroundColor:'rgba(16,185,129,0.8)'},
+  ], {xTitle:'World Cup tournament year', yTitle:'Number of sponsors', extra:{barPercentage:0.7, scales:{x:{stacked:false,title:{display:true,text:'World Cup tournament year',color:'#64748b',font:{size:11}}},y:{stacked:false,title:{display:true,text:'Number of sponsors',color:'#64748b',font:{size:11}}}}}});
+
+  // Revenue chart
+  makeBarChart('chart-revenue',
+    ['2006 cycle','2018 cycle','2022 cycle','2026 cycle'],
+    [{label:'FIFA Commercial Rights Revenue (USD M)', data:[714,1652,1795,2693],
+      backgroundColor:['rgba(59,130,246,0.6)','rgba(99,102,241,0.6)','rgba(139,92,246,0.6)','rgba(16,185,129,0.6)'],
+      borderColor:['#3b82f6','#6366f1','#8b5cf6','#10b981'], borderWidth:1}],
+    {legend:false, xTitle:'World Cup cycle', yTitle:'Revenue (USD millions)'}
+  );
+
+  // UMI chart
+  {
+    const tKeys = ['FIFA World Cup 2006','FIFA World Cup 2010','FIFA World Cup 2014','FIFA World Cup 2018','FIFA World Cup 2022','FIFA World Cup 2026'];
+    const tLabels = ['2006','2010','2014','2018 (GB confirmed)','2022','2026'];
+    const categories = [
+      {key:'alcohol',     label:'Alcohol',      color:'rgba(139,92,246,0.75)', border:'#8b5cf6'},
+      {key:'HFSS_food',   label:'HFSS Food',    color:'rgba(249,115,22,0.75)', border:'#f97316'},
+      {key:'sugary_drink',label:'Sugary Drink',  color:'rgba(16,185,129,0.75)',border:'#10b981'},
+      {key:'fossil_fuel', label:'Fossil Fuel',   color:'rgba(251,191,36,0.75)',border:'#fbbf24'},
+      {key:'gambling',    label:'Gambling',      color:'rgba(239,68,68,0.75)', border:'#ef4444'},
+    ];
+    const umiRows = DATA.umi.filter(r => r.umi_score != null);
+    const datasets = categories.map(cat => ({
+      label: cat.label,
+      data: tKeys.map(t => {
+        const gbRow = umiRows.find(r => r.tournament === t && r.category === cat.key && r.country === 'GB');
+        const glRow = umiRows.find(r => r.tournament === t && r.category === cat.key && r.country === 'GLOBAL');
+        const row = gbRow || glRow;
+        return row ? row.umi_score : null;
+      }),
+      backgroundColor: cat.color,
+      borderColor: cat.border,
+      borderWidth: 1,
+      skipNull: true,
+    }));
+    destroyChart('chart-umi');
+    charts['chart-umi'] = new Chart(document.getElementById('chart-umi'), {
+      type: 'bar',
+      data: {labels: tLabels, datasets},
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: {labels: {color:'#94a3b8', boxWidth:12}},
+          tooltip: {backgroundColor:'#1a2235', borderColor:'#2a3650', borderWidth:1, callbacks: {label: ctx => ctx.raw != null ? `${ctx.dataset.label}: ${ctx.raw}` : null}}
+        },
+        scales: {
+          x: {ticks:{color:'#94a3b8'}, grid:{color:'rgba(42,54,80,0.5)'}},
+          y: {beginAtZero:true, ticks:{color:'#94a3b8'}, grid:{color:'rgba(42,54,80,0.5)'}, title:{display:true, text:'UMI Score', color:'#64748b', font:{size:11}}}
+        }
+      }
+    });
+  }
+
+  // Impressions chart
+  makeBarChart('chart-impressions',
+    ['UK 2018\n(HFSS)', 'UK 2018\n(Alcohol)', 'Global 2018\n(HFSS est.)', 'Global 2018\n(Alc est.)', 'Global 2022\n(HFSS est.)', 'Global 2022\n(Alc est.)', 'Global 2026\n(HFSS est.)', 'Global 2026\n(Alc est.)'],
+    [
+      {label:'Total impressions (billions)', data:[7.5, 3.3, null, null, null, null, null, null], backgroundColor:['rgba(249,115,22,0.85)','rgba(139,92,246,0.85)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)'], borderColor:['#f97316','#8b5cf6','#f97316','#8b5cf6','#f97316','#8b5cf6','#f97316','#8b5cf6'], borderWidth:1},
+      {label:'Estimated impressions (billions)', data:[null, null, 37.5, 16.5, 40.9, 18.0, 66.5, 29.3], backgroundColor:['rgba(249,115,22,0.85)','rgba(139,92,246,0.85)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)','rgba(249,115,22,0.45)','rgba(139,92,246,0.45)'], borderColor:['#f97316','#8b5cf6','#f97316','#8b5cf6','#f97316','#8b5cf6','#f97316','#8b5cf6'], borderWidth:1, borderDash:[4,4]},
+      {label:'Under-16 impressions (billions)', data:[0.759, 0.385, null, null, null, null, null, null], backgroundColor:['rgba(249,115,22,0.35)','rgba(139,92,246,0.35)','rgba(0,0,0,0)','rgba(0,0,0,0)','rgba(0,0,0,0)','rgba(0,0,0,0)','rgba(0,0,0,0)','rgba(0,0,0,0)'], borderColor:['#f97316','#8b5cf6','transparent','transparent','transparent','transparent','transparent','transparent'], borderWidth:1},
+    ],
+    {xTitle:'Market / tournament', yTitle:'Impressions (billions)', extra:{plugins:{legend:{display:true},tooltip:{callbacks:{label:ctx=>{const v=ctx.raw;return v==null?'No primary data':ctx.dataset.label+': '+v+'B';}}}}}}
+  );
+
+  // CSH top table
+  const allCompanies2026 = DATA.companies.filter(c => c.tournament.includes('2026'));
+  const scored = allCompanies2026.map(c => ({...c, csh: computeCSH(c)})).sort((a,b) => a.csh - b.csh);
+  const topHtml = `<div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Company</th><th>Industry</th><th title="Health harm categories">Flags</th><th title="CSH Score">CSH Score</th><th>Impact Direction</th></tr></thead>
+    <tbody>${scored.map((c,i) => `<tr>
+      <td style="color:var(--text3)">${i+1}</td>
+      <td style="font-weight:600">${c.name}</td>
+      <td>${c.industry}</td>
+      <td>${flagPills(c)}</td>
+      <td><span class="score-pill ${cshClass(c.csh)}" style="font-size:13px">${c.csh}</span></td>
+      <td style="color:${cshColor(c.csh)}">${c.csh < -30 ? '⬇ Significant harm' : c.csh < 0 ? '⬇ Moderate harm' : c.csh < 10 ? '→ Neutral' : '⬆ Benefit'}</td>
+    </tr>`).join('')}
+    </tbody></table></div>`;
+  document.getElementById('csh-top-table').innerHTML = topHtml;
 }
 
 function flagPills(c) {
@@ -3943,6 +4227,8 @@ const VIEW_TITLES = {
   literature: 'Evidence Base — Literature',
   methodology: 'Methodology & Data Standards',
   nations: 'Participating Nations Health Index',
+  observatory: 'Observatory Overview — All Tournaments 2006–2026',
+  bracket: '2026 Health Impact Bracket',
 };
 
 function showView(id) {
@@ -3955,6 +4241,8 @@ function showView(id) {
   // Lazy render
   switch(id) {
     case 'dashboard': renderDashboard(); break;
+    case 'observatory': renderObservatory(); break;
+    case 'bracket': renderDashboard(); break;
     case 'companies': renderSponsorsTable(); break;
     case 'csh': renderCSHRankings(); break;
     case 'ethics': renderEthics(); break;
@@ -5347,54 +5635,54 @@ const WC_TEAMS = {
   "FIFA World Cup 2026": {
     host:"USA", coHosts:["CAN","MEX"], format:48,
     teams:[
-      {name:"Argentina",iso3:"ARG",group:"A",round:"TBD",fifaRank:1,matches:3},
-      {name:"Chile",iso3:"CHL",group:"A",round:"GS",fifaRank:28,matches:3},
-      {name:"Peru",iso3:"PER",group:"A",round:"GS",fifaRank:36,matches:3},
-      {name:"Canada",iso3:"CAN",group:"A",round:"GS",fifaRank:43,matches:3,coHost:true},
-      {name:"England",iso3:"GBR",group:"B",round:"TBD",fifaRank:5,matches:3,homeNation:"England"},
-      {name:"Netherlands",iso3:"NLD",group:"B",round:"TBD",fifaRank:7,matches:3},
-      {name:"Senegal",iso3:"SEN",group:"B",round:"GS",fifaRank:18,matches:3},
-      {name:"Wales",iso3:"GBR",group:"B",round:"GS",fifaRank:22,matches:3,homeNation:"Wales"},
-      {name:"USA",iso3:"USA",group:"C",round:"TBD",fifaRank:11,matches:3,coHost:true},
-      {name:"Panama",iso3:"PAN",group:"C",round:"GS",fifaRank:74,matches:3},
-      {name:"Uruguay",iso3:"URY",group:"C",round:"GS",fifaRank:14,matches:3},
-      {name:"Bolivia",iso3:"BOL",group:"C",round:"GS",fifaRank:76,matches:3},
-      {name:"Brazil",iso3:"BRA",group:"D",round:"TBD",fifaRank:4,matches:3},
-      {name:"Germany",iso3:"DEU",group:"D",round:"TBD",fifaRank:13,matches:3},
-      {name:"Spain",iso3:"ESP",group:"D",round:"TBD",fifaRank:3,matches:3},
-      {name:"Costa Rica",iso3:"CRI",group:"D",round:"GS",fifaRank:52,matches:3},
-      {name:"Belgium",iso3:"BEL",group:"E",round:"TBD",fifaRank:2,matches:3},
-      {name:"Portugal",iso3:"PRT",group:"E",round:"TBD",fifaRank:8,matches:3},
-      {name:"Turkey",iso3:"TUR",group:"E",round:"TBD",fifaRank:21,matches:3},
-      {name:"Slovakia",iso3:"SVK",group:"E",round:"GS",fifaRank:35,matches:3},
-      {name:"Italy",iso3:"ITA",group:"F",round:"TBD",fifaRank:6,matches:3},
-      {name:"Poland",iso3:"POL",group:"F",round:"TBD",fifaRank:26,matches:3},
-      {name:"Ecuador",iso3:"ECU",group:"F",round:"GS",fifaRank:41,matches:3},
-      {name:"Albania",iso3:"ALB",group:"F",round:"GS",fifaRank:65,matches:3},
-      {name:"Australia",iso3:"AUS",group:"G",round:"TBD",fifaRank:23,matches:3},
-      {name:"South Korea",iso3:"KOR",group:"G",round:"TBD",fifaRank:25,matches:3},
-      {name:"Mexico",iso3:"MEX",group:"G",round:"TBD",fifaRank:15,matches:3,coHost:true},
-      {name:"Cameroon",iso3:"CMR",group:"G",round:"GS",fifaRank:45,matches:3},
-      {name:"Colombia",iso3:"COL",group:"H",round:"TBD",fifaRank:9,matches:3},
-      {name:"Japan",iso3:"JPN",group:"H",round:"TBD",fifaRank:16,matches:3},
-      {name:"Morocco",iso3:"MAR",group:"H",round:"TBD",fifaRank:12,matches:3},
-      {name:"Paraguay",iso3:"PRY",group:"H",round:"GS",fifaRank:68,matches:3},
-      {name:"France",iso3:"FRA",group:"I",round:"TBD",fifaRank:2,matches:3},
-      {name:"Serbia",iso3:"SRB",group:"I",round:"TBD",fifaRank:33,matches:3},
-      {name:"Greece",iso3:"GRC",group:"I",round:"GS",fifaRank:48,matches:3},
-      {name:"New Zealand",iso3:"NZL",group:"I",round:"GS",fifaRank:90,matches:3},
-      {name:"Iran",iso3:"IRN",group:"J",round:"TBD",fifaRank:20,matches:3},
-      {name:"Ghana",iso3:"GHA",group:"J",round:"TBD",fifaRank:60,matches:3},
-      {name:"Saudi Arabia",iso3:"SAU",group:"J",round:"TBD",fifaRank:56,matches:3},
-      {name:"Indonesia",iso3:"IDN",group:"J",round:"GS",fifaRank:120,matches:3},
-      {name:"Switzerland",iso3:"CHE",group:"K",round:"TBD",fifaRank:19,matches:3},
-      {name:"Hungary",iso3:"HUN",group:"K",round:"TBD",fifaRank:36,matches:3},
+      {name:"Mexico",iso3:"MEX",group:"A",round:"R32",fifaRank:15,matches:3,coHost:true},
+      {name:"South Korea",iso3:"KOR",group:"A",round:"R32",fifaRank:25,matches:3},
+      {name:"Czech Republic",iso3:"CZE",group:"A",round:"TBD",fifaRank:36,matches:3},
+      {name:"South Africa",iso3:"ZAF",group:"A",round:"GS",fifaRank:64,matches:3},
+      {name:"Canada",iso3:"CAN",group:"B",round:"R32",fifaRank:43,matches:3,coHost:true},
+      {name:"Switzerland",iso3:"CHE",group:"B",round:"R32",fifaRank:19,matches:3},
+      {name:"Bosnia and Herzegovina",iso3:"BIH",group:"B",round:"GS",fifaRank:58,matches:3},
+      {name:"Qatar",iso3:"QAT",group:"B",round:"GS",fifaRank:68,matches:3},
+      {name:"Brazil",iso3:"BRA",group:"C",round:"R32",fifaRank:4,matches:3},
+      {name:"Morocco",iso3:"MAR",group:"C",round:"R32",fifaRank:12,matches:3},
+      {name:"Scotland",iso3:"GBR",group:"C",round:"TBD",fifaRank:39,matches:3,homeNation:"Scotland"},
+      {name:"Haiti",iso3:"HTI",group:"C",round:"GS",fifaRank:100,matches:3},
+      {name:"USA",iso3:"USA",group:"D",round:"R32",fifaRank:11,matches:3,coHost:true},
+      {name:"Australia",iso3:"AUS",group:"D",round:"TBD",fifaRank:23,matches:3},
+      {name:"Paraguay",iso3:"PRY",group:"D",round:"TBD",fifaRank:68,matches:3},
+      {name:"Turkey",iso3:"TUR",group:"D",round:"GS",fifaRank:21,matches:3},
+      {name:"Germany",iso3:"DEU",group:"E",round:"R32",fifaRank:13,matches:3},
+      {name:"Ivory Coast",iso3:"CIV",group:"E",round:"R32",fifaRank:48,matches:3},
+      {name:"Ecuador",iso3:"ECU",group:"E",round:"GS",fifaRank:41,matches:3},
+      {name:"Curaçao",iso3:"CUW",group:"E",round:"GS",fifaRank:88,matches:3},
+      {name:"Netherlands",iso3:"NLD",group:"F",round:"R32",fifaRank:7,matches:3},
+      {name:"Japan",iso3:"JPN",group:"F",round:"R32",fifaRank:16,matches:3},
+      {name:"Sweden",iso3:"SWE",group:"F",round:"TBD",fifaRank:28,matches:3},
+      {name:"Tunisia",iso3:"TUN",group:"F",round:"GS",fifaRank:34,matches:3},
+      {name:"Egypt",iso3:"EGY",group:"G",round:"R32",fifaRank:32,matches:3},
+      {name:"Iran",iso3:"IRN",group:"G",round:"TBD",fifaRank:20,matches:3},
+      {name:"Belgium",iso3:"BEL",group:"G",round:"TBD",fifaRank:2,matches:3},
+      {name:"New Zealand",iso3:"NZL",group:"G",round:"GS",fifaRank:90,matches:3},
+      {name:"Spain",iso3:"ESP",group:"H",round:"R32",fifaRank:3,matches:3},
+      {name:"Uruguay",iso3:"URY",group:"H",round:"R32",fifaRank:14,matches:3},
+      {name:"Cape Verde",iso3:"CPV",group:"H",round:"TBD",fifaRank:72,matches:3},
+      {name:"Saudi Arabia",iso3:"SAU",group:"H",round:"GS",fifaRank:56,matches:3},
+      {name:"Norway",iso3:"NOR",group:"I",round:"R32",fifaRank:30,matches:3},
+      {name:"France",iso3:"FRA",group:"I",round:"R32",fifaRank:2,matches:3},
+      {name:"Senegal",iso3:"SEN",group:"I",round:"GS",fifaRank:18,matches:3},
+      {name:"Iraq",iso3:"IRQ",group:"I",round:"GS",fifaRank:75,matches:3},
+      {name:"Argentina",iso3:"ARG",group:"J",round:"R32",fifaRank:1,matches:3},
+      {name:"Austria",iso3:"AUT",group:"J",round:"R32",fifaRank:26,matches:3},
+      {name:"Jordan",iso3:"JOR",group:"J",round:"GS",fifaRank:80,matches:3},
+      {name:"Algeria",iso3:"DZA",group:"J",round:"GS",fifaRank:52,matches:3},
+      {name:"Colombia",iso3:"COL",group:"K",round:"R32",fifaRank:9,matches:3},
+      {name:"DR Congo",iso3:"COD",group:"K",round:"TBD",fifaRank:95,matches:3},
+      {name:"Portugal",iso3:"PRT",group:"K",round:"TBD",fifaRank:8,matches:3},
       {name:"Uzbekistan",iso3:"UZB",group:"K",round:"GS",fifaRank:75,matches:3},
-      {name:"Syria",iso3:"SYR",group:"K",round:"GS",fifaRank:88,matches:3},
-      {name:"Croatia",iso3:"HRV",group:"L",round:"TBD",fifaRank:10,matches:3},
-      {name:"Denmark",iso3:"DNK",group:"L",round:"TBD",fifaRank:20,matches:3},
-      {name:"Tunisia",iso3:"TUN",group:"L",round:"GS",fifaRank:34,matches:3},
-      {name:"Kenya",iso3:"KEN",group:"L",round:"GS",fifaRank:110,matches:3}
+      {name:"England",iso3:"GBR",group:"L",round:"R32",fifaRank:5,matches:3,homeNation:"England"},
+      {name:"Ghana",iso3:"GHA",group:"L",round:"R32",fifaRank:60,matches:3},
+      {name:"Panama",iso3:"PAN",group:"L",round:"GS",fifaRank:74,matches:3},
+      {name:"Croatia",iso3:"HRV",group:"L",round:"GS",fifaRank:10,matches:3}
     ]
   }
 };
@@ -5403,6 +5691,14 @@ const WC_TEAMS = {
 // mean_rps = mean of available scores
 const REGULATORY_SCORES = {
   ALB:{hfss:0.20,alcohol:0.30,gambling:0.25},
+  AUT:{hfss:0.50,alcohol:0.55,gambling:0.50},
+  COD:{hfss:0.10,alcohol:0.20,gambling:0.10},
+  CPV:{hfss:0.15,alcohol:0.30,gambling:0.15},
+  CUW:{hfss:0.30,alcohol:0.35,gambling:0.25},
+  HTI:{hfss:0.10,alcohol:0.20,gambling:0.10},
+  IRQ:{hfss:0.20,alcohol:0.70,gambling:0.25},
+  JOR:{hfss:0.25,alcohol:0.65,gambling:0.30},
+  NOR:{hfss:0.60,alcohol:0.65,gambling:0.65},
   AGO:{hfss:0.10,alcohol:0.20,gambling:0.10},
   ARG:{hfss:0.35,alcohol:0.40,gambling:0.35},
   AUS:{hfss:0.55,alcohol:0.65,gambling:0.45},
@@ -5473,8 +5769,9 @@ const REGULATORY_SCORES = {
 // Population estimates (millions) for scatter plot sizing
 const POP_M = {
   AGO:36,ALB:3,ARG:46,AUS:26,BEL:11,BIH:3,BOL:12,BRA:215,CAN:38,CHE:8,CHL:19,
-  CIV:27,CMR:28,COL:52,CRI:5,CZE:11,DEU:84,DNK:6,DZA:46,ECU:18,EGY:106,ESP:47,
+  CIV:27,CMR:28,COD:102,COL:52,CPV:0.6,CRI:5,CUW:0.19,CZE:11,DEU:84,DNK:6,DZA:46,ECU:18,EGY:106,ESP:47,
   FRA:68,GBR:68,GHA:33,GRC:11,HND:10,HRV:4,HUN:10,IDN:278,IRN:89,ISL:0.4,ITA:60,
+  AUT:9,HTI:12,IRQ:43,JOR:10,NOR:5,
   JPN:125,KEN:56,KOR:52,MAR:38,MEX:128,NGA:224,NLD:17,NZL:5,PAN:4,PER:33,POL:38,
   PRK:26,PRT:10,PRY:7,QAT:3,RUS:146,SAU:36,SCG:8,SEN:18,SRB:7,SVK:5,SVN:2,
   SWE:10,SYR:22,TGO:9,TTO:1.4,TUN:12,TUR:85,UKR:44,URY:3.5,USA:330,UZB:36,ZAF:60
@@ -5483,6 +5780,7 @@ const POP_M = {
 // Income groups for scatter plot
 const INCOME_GROUP = {
   AGO:'LMIC',ALB:'UMIC',ARG:'UMIC',AUS:'HIC',BEL:'HIC',BIH:'UMIC',BOL:'LMIC',BRA:'UMIC',
+  AUT:'HIC',COD:'LIC',CPV:'LMIC',CUW:'HIC',HTI:'LIC',IRQ:'LMIC',JOR:'UMIC',NOR:'HIC',
   CAN:'HIC',CHE:'HIC',CHL:'HIC',CIV:'LMIC',CMR:'LMIC',COL:'UMIC',CRI:'UMIC',CZE:'HIC',
   DEU:'HIC',DNK:'HIC',DZA:'LMIC',ECU:'UMIC',EGY:'LMIC',ESP:'HIC',FRA:'HIC',GBR:'HIC',
   GHA:'LMIC',GRC:'HIC',HND:'LMIC',HRV:'HIC',HUN:'HIC',IDN:'LMIC',IRN:'LMIC',ISL:'HIC',
