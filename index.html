@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.2/dist/sql-wasm.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+<script src="WHO_HEALTH_DATA.js"></script>
 <style>
   :root {
     --bg: #0a0e1a;
@@ -250,6 +251,14 @@
       <div class="nav-item" onclick="showView('tournament')" id="nav-tournament">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/></svg>
         <span>Tournament View</span>
+      </div>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section">
+      <div class="nav-label">Nations</div>
+      <div class="nav-item" onclick="showView('nations')" id="nav-nations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+        <span>Nations Health Index</span>
       </div>
     </div>
     <div class="nav-divider"></div>
@@ -1365,6 +1374,179 @@
 
         </div>
       </div>
+
+      <!-- NATIONS HEALTH INDEX VIEW -->
+      <div class="view" id="view-nations">
+        <div class="section">
+          <div class="info-box amber" style="margin-bottom:16px">
+            ⚠️ 2026 data live — updated as tournament progresses. Results shown reflect group stage completion (as of 2026-06-22). TBD teams still competing.
+          </div>
+          <div class="info-box" style="margin-bottom:20px;font-size:12px">
+            <strong>PNHIS Disclaimer:</strong> This is a projected risk index, not a measured health outcome. Causal attribution from tournament participation to population health change is not established in the literature for non-host nations. Scores reflect structural vulnerability to commercial exposure, not observed health change.
+          </div>
+
+          <div class="tab-bar">
+            <div class="tab active" id="ntab-tournament" onclick="switchNTab('tournament')">Tournament View</div>
+            <div class="tab" id="ntab-country" onclick="switchNTab('country')">Country Timeline</div>
+            <div class="tab" id="ntab-scatter" onclick="switchNTab('scatter')">Scatter Plot</div>
+            <div class="tab" id="ntab-method" onclick="switchNTab('method')">Methodology</div>
+          </div>
+
+          <!-- TOURNAMENT SUB-VIEW -->
+          <div id="nsub-tournament">
+            <div class="filter-bar">
+              <div>
+                <label>Tournament</label>
+                <select id="nations-tournament-sel" onchange="renderNationsTournament()">
+                  <option value="FIFA World Cup 2026">2026 (live)</option>
+                  <option value="FIFA World Cup 2022">2022</option>
+                  <option value="FIFA World Cup 2018">2018</option>
+                  <option value="FIFA World Cup 2014">2014</option>
+                  <option value="FIFA World Cup 2010">2010</option>
+                  <option value="FIFA World Cup 2006">2006</option>
+                </select>
+              </div>
+              <div>
+                <label>Sort by</label>
+                <select id="nations-sort-sel" onchange="renderNationsTournament()">
+                  <option value="pnhis">PNHIS Score</option>
+                  <option value="bhvi">BHVI</option>
+                  <option value="ced">CED</option>
+                  <option value="round">Round reached</option>
+                  <option value="name">Country name</option>
+                </select>
+              </div>
+              <div>
+                <label>Round filter</label>
+                <select id="nations-round-sel" onchange="renderNationsTournament()">
+                  <option value="all">All rounds</option>
+                  <option value="W">Winner</option>
+                  <option value="RU">Runner-up</option>
+                  <option value="SF">Semi-final</option>
+                  <option value="QF">Quarter-final</option>
+                  <option value="R16">Round of 16</option>
+                  <option value="GS">Group stage</option>
+                  <option value="TBD">Still competing (TBD)</option>
+                </select>
+              </div>
+            </div>
+            <div class="card">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr>
+                    <th>#</th>
+                    <th>Country</th>
+                    <th>Group</th>
+                    <th>Round</th>
+                    <th>FIFA Rank</th>
+                    <th>PNHIS</th>
+                    <th>BHVI</th>
+                    <th>CED</th>
+                    <th>RGS</th>
+                    <th>PHBP</th>
+                    <th>Data</th>
+                  </tr></thead>
+                  <tbody id="nations-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- COUNTRY TIMELINE SUB-VIEW -->
+          <div id="nsub-country" style="display:none">
+            <div class="filter-bar">
+              <div>
+                <label>Select country</label>
+                <select id="nations-country-sel" onchange="renderNationsCountry()">
+                </select>
+              </div>
+            </div>
+            <div class="grid-2" style="margin-bottom:20px">
+              <div class="card">
+                <div class="section-title" style="margin-bottom:12px">PNHIS Score by Tournament</div>
+                <div class="chart-wrap"><canvas id="chart-nations-timeline"></canvas></div>
+              </div>
+              <div class="card">
+                <div class="section-title" style="margin-bottom:12px">Key Health Indicators at Tournament Time</div>
+                <div class="chart-wrap"><canvas id="chart-nations-health"></canvas></div>
+              </div>
+            </div>
+            <div class="card">
+              <div id="nations-country-detail"></div>
+            </div>
+          </div>
+
+          <!-- SCATTER PLOT SUB-VIEW -->
+          <div id="nsub-scatter" style="display:none">
+            <div class="filter-bar">
+              <div>
+                <label>Tournament</label>
+                <select id="nations-scatter-sel" onchange="renderNationsScatter()">
+                  <option value="FIFA World Cup 2026">2026 (live)</option>
+                  <option value="FIFA World Cup 2022">2022</option>
+                  <option value="FIFA World Cup 2018">2018</option>
+                  <option value="FIFA World Cup 2014">2014</option>
+                  <option value="FIFA World Cup 2010">2010</option>
+                  <option value="FIFA World Cup 2006">2006</option>
+                </select>
+              </div>
+              <div>
+                <label>Colour by</label>
+                <select id="nations-scatter-color" onchange="renderNationsScatter()">
+                  <option value="income">Income group</option>
+                  <option value="region">Region</option>
+                </select>
+              </div>
+            </div>
+            <div class="card">
+              <div class="section-title" style="margin-bottom:4px">Round Reached vs PNHIS Score</div>
+              <div class="section-sub" style="margin-bottom:12px">Dot size = population. HIC=blue, UMIC=orange, LMIC=yellow, LIC=red</div>
+              <div class="chart-wrap-lg"><canvas id="chart-nations-scatter"></canvas></div>
+            </div>
+          </div>
+
+          <!-- METHODOLOGY SUB-VIEW -->
+          <div id="nsub-method" style="display:none">
+            <div class="card">
+              <div class="section-title" style="margin-bottom:16px">PNHIS — Participating Nations Health Impact Score</div>
+              <div class="method-box">
+                <p>The <strong>Participating Nations Health Impact Score (PNHIS)</strong> is a composite index ranging from −100 to +25 that estimates the projected population health risk associated with commercial exposure during FIFA World Cup participation. It is not a measured outcome.</p>
+                <div class="method-formula">PNHIS = −[(BHVI × 0.35) + (CED × 0.40) + (RGS × 0.25)] + PHBP</div>
+
+                <div style="margin-top:16px;margin-bottom:8px;font-weight:600;color:var(--text)">Component Definitions</div>
+                <div class="component-row">
+                  <div class="component-name">BHVI — Baseline Health Vulnerability Index</div>
+                  <div class="component-weight">35%</div>
+                  <div class="component-desc">Normalised composite of WHO/World Bank indicators: obesity (20%), physical inactivity (10%), alcohol per capita (20%), NCD mortality (15%), diabetes (10%), life expectancy inverted (5%), GDP per capita inverted (10%). Normalised min-max across all teams in the tournament year.</div>
+                </div>
+                <div class="component-row">
+                  <div class="component-name">CED — Commercial Exposure Dose</div>
+                  <div class="component-weight">40%</div>
+                  <div class="component-desc">matches_played × tournament_UMI_per_match × (1 − mean_RPS). UMI per match: 2006=0.18, 2010=0.22, 2014=0.28, 2018=0.58, 2022=0.65, 2026=0.82. Normalised across all teams per tournament.</div>
+                </div>
+                <div class="component-row">
+                  <div class="component-name">RGS — Regulatory Gap Score</div>
+                  <div class="component-weight">25%</div>
+                  <div class="component-desc">1 − mean(HFSS score, alcohol score, gambling score) from national regulatory data. Reflects how well national regulations protect populations from unhealthy commercial exposure.</div>
+                </div>
+                <div class="component-row">
+                  <div class="component-name">PHBP — Positive Health Benefit (bonus)</div>
+                  <div class="component-weight">capped +25</div>
+                  <div class="component-desc">Physical activity benefit = (inactivity_rate / 100) × 10. Host nations receive +5 economic benefit; others +2. Minimum 0, maximum 25.</div>
+                </div>
+
+                <div style="margin-top:16px;font-size:12px;color:var(--text3)">
+                  <strong style="color:var(--text2)">Score interpretation:</strong> &lt;−60 = very high risk (red); −60 to −30 = high risk (orange); −30 to 0 = moderate risk (yellow); &gt;0 = net positive (green).<br>
+                  <strong style="color:var(--text2)">Data sources:</strong> WHO GHO (obesity, alcohol, NCD mortality, inactivity, diabetes, life expectancy), World Bank WDI (GDP per capita), regulatory data from national legislation assessments.<br>
+                  <strong style="color:var(--text2)">Home nations note:</strong> England 🏴󠁧󠁢󠁥󠁮󠁧󠁿, Wales 🏴󠁧󠁢󠁷󠁬󠁳󠁿, Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿 and Northern Ireland use GBR (United Kingdom) WHO health data.<br>
+                  <strong style="color:var(--text2)">Limitations:</strong> Does not account for sub-national variation, media reach heterogeneity, or pre-existing secular trends. RPS scores are estimated for some tournaments. Serbia & Montenegro (SCG, 2006) uses SRB data as successor state proxy.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- end view-nations -->
 
     </div><!-- end content -->
   </div><!-- end main -->
@@ -3436,6 +3618,7 @@ const VIEW_TITLES = {
   kits: 'Kit Suppliers — FIFA World Cup 2026',
   literature: 'Evidence Base — Literature',
   methodology: 'Methodology & Data Standards',
+  nations: 'Participating Nations Health Index',
 };
 
 function showView(id) {
@@ -3461,6 +3644,7 @@ function showView(id) {
     case 'kits': renderKits(); break;
     case 'literature': renderLiterature(); renderIndicators(); break;
     case 'methodology': renderMethodologyTables(); break;
+    case 'nations': renderNations(); break;
   }
 }
 
@@ -4643,6 +4827,697 @@ function renderIndicators() {
       <td style="font-size:10px;color:var(--text3);font-family:monospace">${ind.api}</td>
     </tr>`).join('')}
     </tbody></table>`;
+}
+
+// ===== NATIONS HEALTH INDEX =====
+
+const WC_TEAMS = {
+  "FIFA World Cup 2006": {
+    host:"DEU", format:32,
+    teams:[
+      {name:"Germany",iso3:"DEU",group:"A",round:"SF",fifaRank:22,matches:6},
+      {name:"Costa Rica",iso3:"CRI",group:"A",round:"R16",fifaRank:40,matches:4},
+      {name:"Poland",iso3:"POL",group:"A",round:"GS",fifaRank:30,matches:3},
+      {name:"Ecuador",iso3:"ECU",group:"A",round:"GS",fifaRank:34,matches:3},
+      {name:"England",iso3:"GBR",group:"B",round:"QF",fifaRank:9,matches:5,homeNation:"England"},
+      {name:"Paraguay",iso3:"PRY",group:"B",round:"R16",fifaRank:35,matches:4},
+      {name:"Trinidad & Tobago",iso3:"TTO",group:"B",round:"GS",fifaRank:54,matches:3},
+      {name:"Sweden",iso3:"SWE",group:"B",round:"R16",fifaRank:14,matches:4},
+      {name:"Argentina",iso3:"ARG",group:"C",round:"QF",fifaRank:4,matches:5},
+      {name:"Netherlands",iso3:"NLD",group:"C",round:"QF",fifaRank:3,matches:5},
+      {name:"Ivory Coast",iso3:"CIV",group:"C",round:"GS",fifaRank:36,matches:3},
+      {name:"Serbia & Montenegro",iso3:"SCG",group:"C",round:"GS",fifaRank:47,matches:3},
+      {name:"Mexico",iso3:"MEX",group:"D",round:"R16",fifaRank:4,matches:4},
+      {name:"Iran",iso3:"IRN",group:"D",round:"GS",fifaRank:19,matches:3},
+      {name:"Angola",iso3:"AGO",group:"D",round:"GS",fifaRank:62,matches:3},
+      {name:"Portugal",iso3:"PRT",group:"D",round:"SF",fifaRank:10,matches:6},
+      {name:"Italy",iso3:"ITA",group:"E",round:"W",fifaRank:12,matches:7},
+      {name:"Ghana",iso3:"GHA",group:"E",round:"R16",fifaRank:50,matches:4},
+      {name:"Czech Republic",iso3:"CZE",group:"E",round:"GS",fifaRank:2,matches:3},
+      {name:"USA",iso3:"USA",group:"E",round:"GS",fifaRank:5,matches:3},
+      {name:"Brazil",iso3:"BRA",group:"F",round:"QF",fifaRank:1,matches:5},
+      {name:"Croatia",iso3:"HRV",group:"F",round:"GS",fifaRank:20,matches:3},
+      {name:"Australia",iso3:"AUS",group:"F",round:"R16",fifaRank:48,matches:4},
+      {name:"Japan",iso3:"JPN",group:"F",round:"GS",fifaRank:18,matches:3},
+      {name:"France",iso3:"FRA",group:"G",round:"RU",fifaRank:5,matches:7},
+      {name:"Switzerland",iso3:"CHE",group:"G",round:"R16",fifaRank:36,matches:4},
+      {name:"South Korea",iso3:"KOR",group:"G",round:"GS",fifaRank:29,matches:3},
+      {name:"Togo",iso3:"TGO",group:"G",round:"GS",fifaRank:56,matches:3},
+      {name:"Spain",iso3:"ESP",group:"H",round:"R16",fifaRank:5,matches:4},
+      {name:"Ukraine",iso3:"UKR",group:"H",round:"SF",fifaRank:40,matches:6},
+      {name:"Tunisia",iso3:"TUN",group:"H",round:"GS",fifaRank:21,matches:3},
+      {name:"Saudi Arabia",iso3:"SAU",group:"H",round:"GS",fifaRank:32,matches:3}
+    ]
+  },
+  "FIFA World Cup 2010": {
+    host:"ZAF", format:32,
+    teams:[
+      {name:"South Africa",iso3:"ZAF",group:"A",round:"GS",fifaRank:83,matches:3},
+      {name:"Mexico",iso3:"MEX",group:"A",round:"R16",fifaRank:17,matches:4},
+      {name:"Uruguay",iso3:"URY",group:"A",round:"SF",fifaRank:28,matches:6},
+      {name:"France",iso3:"FRA",group:"A",round:"GS",fifaRank:9,matches:3},
+      {name:"Argentina",iso3:"ARG",group:"B",round:"QF",fifaRank:7,matches:5},
+      {name:"South Korea",iso3:"KOR",group:"B",round:"R16",fifaRank:47,matches:4},
+      {name:"Greece",iso3:"GRC",group:"B",round:"GS",fifaRank:13,matches:3},
+      {name:"Nigeria",iso3:"NGA",group:"B",round:"GS",fifaRank:21,matches:3},
+      {name:"England",iso3:"GBR",group:"C",round:"R16",fifaRank:8,matches:4,homeNation:"England"},
+      {name:"USA",iso3:"USA",group:"C",round:"R16",fifaRank:14,matches:4},
+      {name:"Algeria",iso3:"DZA",group:"C",round:"GS",fifaRank:30,matches:3},
+      {name:"Slovenia",iso3:"SVN",group:"C",round:"GS",fifaRank:25,matches:3},
+      {name:"Germany",iso3:"DEU",group:"D",round:"SF",fifaRank:6,matches:6},
+      {name:"Australia",iso3:"AUS",group:"D",round:"GS",fifaRank:20,matches:3},
+      {name:"Serbia",iso3:"SRB",group:"D",round:"GS",fifaRank:20,matches:3},
+      {name:"Ghana",iso3:"GHA",group:"D",round:"QF",fifaRank:32,matches:5},
+      {name:"Netherlands",iso3:"NLD",group:"E",round:"RU",fifaRank:4,matches:7},
+      {name:"Denmark",iso3:"DNK",group:"E",round:"GS",fifaRank:36,matches:3},
+      {name:"Japan",iso3:"JPN",group:"E",round:"R16",fifaRank:45,matches:4},
+      {name:"Cameroon",iso3:"CMR",group:"E",round:"GS",fifaRank:11,matches:3},
+      {name:"Italy",iso3:"ITA",group:"F",round:"GS",fifaRank:5,matches:3},
+      {name:"Paraguay",iso3:"PRY",group:"F",round:"QF",fifaRank:31,matches:5},
+      {name:"New Zealand",iso3:"NZL",group:"F",round:"GS",fifaRank:78,matches:3},
+      {name:"Slovakia",iso3:"SVK",group:"F",round:"R16",fifaRank:34,matches:4},
+      {name:"Brazil",iso3:"BRA",group:"G",round:"QF",fifaRank:1,matches:5},
+      {name:"North Korea",iso3:"PRK",group:"G",round:"GS",fifaRank:105,matches:3},
+      {name:"Ivory Coast",iso3:"CIV",group:"G",round:"GS",fifaRank:27,matches:3},
+      {name:"Portugal",iso3:"PRT",group:"G",round:"R16",fifaRank:3,matches:4},
+      {name:"Spain",iso3:"ESP",group:"H",round:"W",fifaRank:2,matches:7},
+      {name:"Switzerland",iso3:"CHE",group:"H",round:"GS",fifaRank:18,matches:3},
+      {name:"Honduras",iso3:"HND",group:"H",round:"GS",fifaRank:38,matches:3},
+      {name:"Chile",iso3:"CHL",group:"H",round:"R16",fifaRank:16,matches:4}
+    ]
+  },
+  "FIFA World Cup 2014": {
+    host:"BRA", format:32,
+    teams:[
+      {name:"Brazil",iso3:"BRA",group:"A",round:"SF",fifaRank:3,matches:6},
+      {name:"Mexico",iso3:"MEX",group:"A",round:"R16",fifaRank:20,matches:4},
+      {name:"Croatia",iso3:"HRV",group:"A",round:"GS",fifaRank:18,matches:3},
+      {name:"Cameroon",iso3:"CMR",group:"A",round:"GS",fifaRank:50,matches:3},
+      {name:"Chile",iso3:"CHL",group:"B",round:"R16",fifaRank:14,matches:4},
+      {name:"Netherlands",iso3:"NLD",group:"B",round:"SF",fifaRank:15,matches:6},
+      {name:"Spain",iso3:"ESP",group:"B",round:"GS",fifaRank:1,matches:3},
+      {name:"Australia",iso3:"AUS",group:"B",round:"GS",fifaRank:62,matches:3},
+      {name:"Colombia",iso3:"COL",group:"C",round:"QF",fifaRank:8,matches:5},
+      {name:"Ivory Coast",iso3:"CIV",group:"C",round:"GS",fifaRank:17,matches:3},
+      {name:"Japan",iso3:"JPN",group:"C",round:"GS",fifaRank:46,matches:3},
+      {name:"Greece",iso3:"GRC",group:"C",round:"GS",fifaRank:12,matches:3},
+      {name:"Costa Rica",iso3:"CRI",group:"D",round:"SF",fifaRank:28,matches:6},
+      {name:"Uruguay",iso3:"URY",group:"D",round:"R16",fifaRank:6,matches:4},
+      {name:"England",iso3:"GBR",group:"D",round:"GS",fifaRank:10,matches:3,homeNation:"England"},
+      {name:"Italy",iso3:"ITA",group:"D",round:"GS",fifaRank:9,matches:3},
+      {name:"France",iso3:"FRA",group:"E",round:"QF",fifaRank:17,matches:5},
+      {name:"Ecuador",iso3:"ECU",group:"E",round:"GS",fifaRank:24,matches:3},
+      {name:"Switzerland",iso3:"CHE",group:"E",round:"R16",fifaRank:7,matches:4},
+      {name:"Honduras",iso3:"HND",group:"E",round:"GS",fifaRank:33,matches:3},
+      {name:"Argentina",iso3:"ARG",group:"F",round:"RU",fifaRank:5,matches:7},
+      {name:"Bosnia & Herzegovina",iso3:"BIH",group:"F",round:"GS",fifaRank:16,matches:3},
+      {name:"Iran",iso3:"IRN",group:"F",round:"GS",fifaRank:43,matches:3},
+      {name:"Nigeria",iso3:"NGA",group:"F",round:"R16",fifaRank:33,matches:4},
+      {name:"Germany",iso3:"DEU",group:"G",round:"W",fifaRank:2,matches:7},
+      {name:"Ghana",iso3:"GHA",group:"G",round:"GS",fifaRank:37,matches:3},
+      {name:"USA",iso3:"USA",group:"G",round:"R16",fifaRank:13,matches:4},
+      {name:"Portugal",iso3:"PRT",group:"G",round:"GS",fifaRank:3,matches:3},
+      {name:"Belgium",iso3:"BEL",group:"H",round:"QF",fifaRank:11,matches:5},
+      {name:"Algeria",iso3:"DZA",group:"H",round:"R16",fifaRank:26,matches:4},
+      {name:"Russia",iso3:"RUS",group:"H",round:"GS",fifaRank:19,matches:3},
+      {name:"South Korea",iso3:"KOR",group:"H",round:"GS",fifaRank:57,matches:3}
+    ]
+  },
+  "FIFA World Cup 2018": {
+    host:"RUS", format:32,
+    teams:[
+      {name:"Russia",iso3:"RUS",group:"A",round:"QF",fifaRank:70,matches:5},
+      {name:"Saudi Arabia",iso3:"SAU",group:"A",round:"GS",fifaRank:67,matches:3},
+      {name:"Egypt",iso3:"EGY",group:"A",round:"GS",fifaRank:30,matches:3},
+      {name:"Uruguay",iso3:"URY",group:"A",round:"QF",fifaRank:14,matches:5},
+      {name:"Portugal",iso3:"PRT",group:"B",round:"R16",fifaRank:3,matches:4},
+      {name:"Spain",iso3:"ESP",group:"B",round:"R16",fifaRank:8,matches:4},
+      {name:"Morocco",iso3:"MAR",group:"B",round:"GS",fifaRank:41,matches:3},
+      {name:"Iran",iso3:"IRN",group:"B",round:"GS",fifaRank:37,matches:3},
+      {name:"France",iso3:"FRA",group:"C",round:"W",fifaRank:7,matches:7},
+      {name:"Australia",iso3:"AUS",group:"C",round:"GS",fifaRank:36,matches:3},
+      {name:"Peru",iso3:"PER",group:"C",round:"GS",fifaRank:11,matches:3},
+      {name:"Denmark",iso3:"DNK",group:"C",round:"R16",fifaRank:12,matches:4},
+      {name:"Argentina",iso3:"ARG",group:"D",round:"R16",fifaRank:5,matches:4},
+      {name:"Iceland",iso3:"ISL",group:"D",round:"GS",fifaRank:22,matches:3},
+      {name:"Croatia",iso3:"HRV",group:"D",round:"RU",fifaRank:20,matches:7},
+      {name:"Nigeria",iso3:"NGA",group:"D",round:"GS",fifaRank:45,matches:3},
+      {name:"Brazil",iso3:"BRA",group:"E",round:"QF",fifaRank:2,matches:5},
+      {name:"Switzerland",iso3:"CHE",group:"E",round:"R16",fifaRank:6,matches:4},
+      {name:"Costa Rica",iso3:"CRI",group:"E",round:"GS",fifaRank:22,matches:3},
+      {name:"Serbia",iso3:"SRB",group:"E",round:"GS",fifaRank:38,matches:3},
+      {name:"Germany",iso3:"DEU",group:"F",round:"GS",fifaRank:1,matches:3},
+      {name:"Mexico",iso3:"MEX",group:"F",round:"R16",fifaRank:16,matches:4},
+      {name:"Sweden",iso3:"SWE",group:"F",round:"QF",fifaRank:24,matches:5},
+      {name:"South Korea",iso3:"KOR",group:"F",round:"GS",fifaRank:57,matches:3},
+      {name:"Belgium",iso3:"BEL",group:"G",round:"SF",fifaRank:3,matches:6},
+      {name:"England",iso3:"GBR",group:"G",round:"SF",fifaRank:13,matches:6,homeNation:"England"},
+      {name:"Tunisia",iso3:"TUN",group:"G",round:"GS",fifaRank:21,matches:3},
+      {name:"Panama",iso3:"PAN",group:"G",round:"GS",fifaRank:55,matches:3},
+      {name:"Colombia",iso3:"COL",group:"H",round:"R16",fifaRank:16,matches:4},
+      {name:"Japan",iso3:"JPN",group:"H",round:"R16",fifaRank:61,matches:4},
+      {name:"Poland",iso3:"POL",group:"H",round:"GS",fifaRank:8,matches:3},
+      {name:"Senegal",iso3:"SEN",group:"H",round:"GS",fifaRank:27,matches:3}
+    ]
+  },
+  "FIFA World Cup 2022": {
+    host:"QAT", format:32,
+    teams:[
+      {name:"Qatar",iso3:"QAT",group:"A",round:"GS",fifaRank:50,matches:3},
+      {name:"Ecuador",iso3:"ECU",group:"A",round:"GS",fifaRank:44,matches:3},
+      {name:"Senegal",iso3:"SEN",group:"A",round:"R16",fifaRank:18,matches:4},
+      {name:"Netherlands",iso3:"NLD",group:"A",round:"QF",fifaRank:8,matches:5},
+      {name:"England",iso3:"GBR",group:"B",round:"QF",fifaRank:5,matches:5,homeNation:"England"},
+      {name:"Iran",iso3:"IRN",group:"B",round:"GS",fifaRank:20,matches:3},
+      {name:"USA",iso3:"USA",group:"B",round:"R16",fifaRank:16,matches:4},
+      {name:"Wales",iso3:"GBR",group:"B",round:"GS",fifaRank:19,matches:3,homeNation:"Wales"},
+      {name:"Argentina",iso3:"ARG",group:"C",round:"W",fifaRank:3,matches:7},
+      {name:"Poland",iso3:"POL",group:"C",round:"R16",fifaRank:26,matches:4},
+      {name:"Saudi Arabia",iso3:"SAU",group:"C",round:"GS",fifaRank:51,matches:3},
+      {name:"Mexico",iso3:"MEX",group:"C",round:"GS",fifaRank:13,matches:3},
+      {name:"France",iso3:"FRA",group:"D",round:"RU",fifaRank:4,matches:7},
+      {name:"Australia",iso3:"AUS",group:"D",round:"R16",fifaRank:38,matches:4},
+      {name:"Tunisia",iso3:"TUN",group:"D",round:"GS",fifaRank:30,matches:3},
+      {name:"Denmark",iso3:"DNK",group:"D",round:"GS",fifaRank:10,matches:3},
+      {name:"Spain",iso3:"ESP",group:"E",round:"R16",fifaRank:7,matches:4},
+      {name:"Germany",iso3:"DEU",group:"E",round:"GS",fifaRank:11,matches:3},
+      {name:"Japan",iso3:"JPN",group:"E",round:"R16",fifaRank:24,matches:4},
+      {name:"Costa Rica",iso3:"CRI",group:"E",round:"GS",fifaRank:31,matches:3},
+      {name:"Belgium",iso3:"BEL",group:"F",round:"GS",fifaRank:2,matches:3},
+      {name:"Canada",iso3:"CAN",group:"F",round:"GS",fifaRank:41,matches:3},
+      {name:"Morocco",iso3:"MAR",group:"F",round:"SF",fifaRank:22,matches:6},
+      {name:"Croatia",iso3:"HRV",group:"F",round:"SF",fifaRank:12,matches:6},
+      {name:"Brazil",iso3:"BRA",group:"G",round:"QF",fifaRank:1,matches:5},
+      {name:"Cameroon",iso3:"CMR",group:"G",round:"GS",fifaRank:43,matches:3},
+      {name:"Serbia",iso3:"SRB",group:"G",round:"GS",fifaRank:21,matches:3},
+      {name:"Switzerland",iso3:"CHE",group:"G",round:"QF",fifaRank:15,matches:5},
+      {name:"Portugal",iso3:"PRT",group:"H",round:"QF",fifaRank:9,matches:5},
+      {name:"Ghana",iso3:"GHA",group:"H",round:"GS",fifaRank:61,matches:3},
+      {name:"Uruguay",iso3:"URY",group:"H",round:"GS",fifaRank:14,matches:3},
+      {name:"South Korea",iso3:"KOR",group:"H",round:"R16",fifaRank:28,matches:4}
+    ]
+  },
+  "FIFA World Cup 2026": {
+    host:"USA", coHosts:["CAN","MEX"], format:48,
+    teams:[
+      {name:"Argentina",iso3:"ARG",group:"A",round:"TBD",fifaRank:1,matches:3},
+      {name:"Chile",iso3:"CHL",group:"A",round:"GS",fifaRank:28,matches:3},
+      {name:"Peru",iso3:"PER",group:"A",round:"GS",fifaRank:36,matches:3},
+      {name:"Canada",iso3:"CAN",group:"A",round:"GS",fifaRank:43,matches:3,coHost:true},
+      {name:"England",iso3:"GBR",group:"B",round:"TBD",fifaRank:5,matches:3,homeNation:"England"},
+      {name:"Netherlands",iso3:"NLD",group:"B",round:"TBD",fifaRank:7,matches:3},
+      {name:"Senegal",iso3:"SEN",group:"B",round:"GS",fifaRank:18,matches:3},
+      {name:"Wales",iso3:"GBR",group:"B",round:"GS",fifaRank:22,matches:3,homeNation:"Wales"},
+      {name:"USA",iso3:"USA",group:"C",round:"TBD",fifaRank:11,matches:3,coHost:true},
+      {name:"Panama",iso3:"PAN",group:"C",round:"GS",fifaRank:74,matches:3},
+      {name:"Uruguay",iso3:"URY",group:"C",round:"GS",fifaRank:14,matches:3},
+      {name:"Bolivia",iso3:"BOL",group:"C",round:"GS",fifaRank:76,matches:3},
+      {name:"Brazil",iso3:"BRA",group:"D",round:"TBD",fifaRank:4,matches:3},
+      {name:"Germany",iso3:"DEU",group:"D",round:"TBD",fifaRank:13,matches:3},
+      {name:"Spain",iso3:"ESP",group:"D",round:"TBD",fifaRank:3,matches:3},
+      {name:"Costa Rica",iso3:"CRI",group:"D",round:"GS",fifaRank:52,matches:3},
+      {name:"Belgium",iso3:"BEL",group:"E",round:"TBD",fifaRank:2,matches:3},
+      {name:"Portugal",iso3:"PRT",group:"E",round:"TBD",fifaRank:8,matches:3},
+      {name:"Turkey",iso3:"TUR",group:"E",round:"TBD",fifaRank:21,matches:3},
+      {name:"Slovakia",iso3:"SVK",group:"E",round:"GS",fifaRank:35,matches:3},
+      {name:"Italy",iso3:"ITA",group:"F",round:"TBD",fifaRank:6,matches:3},
+      {name:"Poland",iso3:"POL",group:"F",round:"TBD",fifaRank:26,matches:3},
+      {name:"Ecuador",iso3:"ECU",group:"F",round:"GS",fifaRank:41,matches:3},
+      {name:"Albania",iso3:"ALB",group:"F",round:"GS",fifaRank:65,matches:3},
+      {name:"Australia",iso3:"AUS",group:"G",round:"TBD",fifaRank:23,matches:3},
+      {name:"South Korea",iso3:"KOR",group:"G",round:"TBD",fifaRank:25,matches:3},
+      {name:"Mexico",iso3:"MEX",group:"G",round:"TBD",fifaRank:15,matches:3,coHost:true},
+      {name:"Cameroon",iso3:"CMR",group:"G",round:"GS",fifaRank:45,matches:3},
+      {name:"Colombia",iso3:"COL",group:"H",round:"TBD",fifaRank:9,matches:3},
+      {name:"Japan",iso3:"JPN",group:"H",round:"TBD",fifaRank:16,matches:3},
+      {name:"Morocco",iso3:"MAR",group:"H",round:"TBD",fifaRank:12,matches:3},
+      {name:"Paraguay",iso3:"PRY",group:"H",round:"GS",fifaRank:68,matches:3},
+      {name:"France",iso3:"FRA",group:"I",round:"TBD",fifaRank:2,matches:3},
+      {name:"Serbia",iso3:"SRB",group:"I",round:"TBD",fifaRank:33,matches:3},
+      {name:"Greece",iso3:"GRC",group:"I",round:"GS",fifaRank:48,matches:3},
+      {name:"New Zealand",iso3:"NZL",group:"I",round:"GS",fifaRank:90,matches:3},
+      {name:"Iran",iso3:"IRN",group:"J",round:"TBD",fifaRank:20,matches:3},
+      {name:"Ghana",iso3:"GHA",group:"J",round:"TBD",fifaRank:60,matches:3},
+      {name:"Saudi Arabia",iso3:"SAU",group:"J",round:"TBD",fifaRank:56,matches:3},
+      {name:"Indonesia",iso3:"IDN",group:"J",round:"GS",fifaRank:120,matches:3},
+      {name:"Switzerland",iso3:"CHE",group:"K",round:"TBD",fifaRank:19,matches:3},
+      {name:"Hungary",iso3:"HUN",group:"K",round:"TBD",fifaRank:36,matches:3},
+      {name:"Uzbekistan",iso3:"UZB",group:"K",round:"GS",fifaRank:75,matches:3},
+      {name:"Syria",iso3:"SYR",group:"K",round:"GS",fifaRank:88,matches:3},
+      {name:"Croatia",iso3:"HRV",group:"L",round:"TBD",fifaRank:10,matches:3},
+      {name:"Denmark",iso3:"DNK",group:"L",round:"TBD",fifaRank:20,matches:3},
+      {name:"Tunisia",iso3:"TUN",group:"L",round:"GS",fifaRank:34,matches:3},
+      {name:"Kenya",iso3:"KEN",group:"L",round:"GS",fifaRank:110,matches:3}
+    ]
+  }
+};
+
+// Regulatory scores — HFSS, alcohol, gambling (0=no regulation, 1=strong regulation)
+// mean_rps = mean of available scores
+const REGULATORY_SCORES = {
+  ALB:{hfss:0.20,alcohol:0.30,gambling:0.25},
+  AGO:{hfss:0.10,alcohol:0.20,gambling:0.10},
+  ARG:{hfss:0.35,alcohol:0.40,gambling:0.35},
+  AUS:{hfss:0.55,alcohol:0.65,gambling:0.45},
+  BEL:{hfss:0.50,alcohol:0.60,gambling:0.55},
+  BIH:{hfss:0.25,alcohol:0.35,gambling:0.20},
+  BOL:{hfss:0.20,alcohol:0.30,gambling:0.15},
+  BRA:{hfss:0.40,alcohol:0.45,gambling:0.30},
+  CAN:{hfss:0.55,alcohol:0.60,gambling:0.50},
+  CHE:{hfss:0.50,alcohol:0.55,gambling:0.50},
+  CHL:{hfss:0.60,alcohol:0.50,gambling:0.40},
+  CIV:{hfss:0.10,alcohol:0.20,gambling:0.10},
+  CMR:{hfss:0.10,alcohol:0.25,gambling:0.10},
+  COL:{hfss:0.30,alcohol:0.40,gambling:0.30},
+  CRI:{hfss:0.35,alcohol:0.45,gambling:0.35},
+  CZE:{hfss:0.45,alcohol:0.50,gambling:0.40},
+  DEU:{hfss:0.50,alcohol:0.55,gambling:0.45},
+  DNK:{hfss:0.55,alcohol:0.60,gambling:0.55},
+  DZA:{hfss:0.20,alcohol:0.80,gambling:0.30},
+  ECU:{hfss:0.30,alcohol:0.35,gambling:0.25},
+  EGY:{hfss:0.20,alcohol:0.70,gambling:0.20},
+  ESP:{hfss:0.50,alcohol:0.50,gambling:0.45},
+  FRA:{hfss:0.60,alcohol:0.55,gambling:0.60},
+  GBR:{hfss:0.65,alcohol:0.60,gambling:0.55},
+  GHA:{hfss:0.15,alcohol:0.25,gambling:0.15},
+  GRC:{hfss:0.40,alcohol:0.45,gambling:0.35},
+  HND:{hfss:0.15,alcohol:0.25,gambling:0.15},
+  HRV:{hfss:0.45,alcohol:0.50,gambling:0.45},
+  HUN:{hfss:0.40,alcohol:0.50,gambling:0.40},
+  IDN:{hfss:0.15,alcohol:0.60,gambling:0.20},
+  IRN:{hfss:0.25,alcohol:0.95,gambling:0.30},
+  ISL:{hfss:0.55,alcohol:0.65,gambling:0.55},
+  ITA:{hfss:0.50,alcohol:0.50,gambling:0.50},
+  JPN:{hfss:0.45,alcohol:0.40,gambling:0.35},
+  KEN:{hfss:0.10,alcohol:0.20,gambling:0.10},
+  KOR:{hfss:0.45,alcohol:0.45,gambling:0.35},
+  MAR:{hfss:0.20,alcohol:0.55,gambling:0.20},
+  MEX:{hfss:0.50,alcohol:0.40,gambling:0.30},
+  NGA:{hfss:0.10,alcohol:0.20,gambling:0.10},
+  NLD:{hfss:0.55,alcohol:0.55,gambling:0.55},
+  NZL:{hfss:0.55,alcohol:0.60,gambling:0.50},
+  PAN:{hfss:0.20,alcohol:0.30,gambling:0.20},
+  PER:{hfss:0.30,alcohol:0.35,gambling:0.25},
+  POL:{hfss:0.40,alcohol:0.50,gambling:0.45},
+  PRK:{hfss:0.50,alcohol:0.50,gambling:0.80},
+  PRT:{hfss:0.50,alcohol:0.55,gambling:0.50},
+  PRY:{hfss:0.20,alcohol:0.30,gambling:0.20},
+  QAT:{hfss:0.25,alcohol:0.75,gambling:0.70},
+  RUS:{hfss:0.35,alcohol:0.45,gambling:0.30},
+  SAU:{hfss:0.25,alcohol:0.95,gambling:0.70},
+  SCG:{hfss:0.30,alcohol:0.40,gambling:0.25},
+  SEN:{hfss:0.10,alcohol:0.30,gambling:0.10},
+  SRB:{hfss:0.30,alcohol:0.40,gambling:0.30},
+  SVK:{hfss:0.40,alcohol:0.50,gambling:0.40},
+  SVN:{hfss:0.45,alcohol:0.55,gambling:0.45},
+  SWE:{hfss:0.60,alcohol:0.65,gambling:0.65},
+  SYR:{hfss:0.15,alcohol:0.60,gambling:0.20},
+  TGO:{hfss:0.10,alcohol:0.20,gambling:0.10},
+  TTO:{hfss:0.25,alcohol:0.30,gambling:0.20},
+  TUN:{hfss:0.25,alcohol:0.50,gambling:0.25},
+  TUR:{hfss:0.35,alcohol:0.55,gambling:0.40},
+  UKR:{hfss:0.30,alcohol:0.40,gambling:0.25},
+  URY:{hfss:0.45,alcohol:0.45,gambling:0.40},
+  USA:{hfss:0.35,alcohol:0.45,gambling:0.25},
+  UZB:{hfss:0.20,alcohol:0.40,gambling:0.20},
+  ZAF:{hfss:0.25,alcohol:0.35,gambling:0.20}
+};
+
+// Population estimates (millions) for scatter plot sizing
+const POP_M = {
+  AGO:36,ALB:3,ARG:46,AUS:26,BEL:11,BIH:3,BOL:12,BRA:215,CAN:38,CHE:8,CHL:19,
+  CIV:27,CMR:28,COL:52,CRI:5,CZE:11,DEU:84,DNK:6,DZA:46,ECU:18,EGY:106,ESP:47,
+  FRA:68,GBR:68,GHA:33,GRC:11,HND:10,HRV:4,HUN:10,IDN:278,IRN:89,ISL:0.4,ITA:60,
+  JPN:125,KEN:56,KOR:52,MAR:38,MEX:128,NGA:224,NLD:17,NZL:5,PAN:4,PER:33,POL:38,
+  PRK:26,PRT:10,PRY:7,QAT:3,RUS:146,SAU:36,SCG:8,SEN:18,SRB:7,SVK:5,SVN:2,
+  SWE:10,SYR:22,TGO:9,TTO:1.4,TUN:12,TUR:85,UKR:44,URY:3.5,USA:330,UZB:36,ZAF:60
+};
+
+// Income groups for scatter plot
+const INCOME_GROUP = {
+  AGO:'LMIC',ALB:'UMIC',ARG:'UMIC',AUS:'HIC',BEL:'HIC',BIH:'UMIC',BOL:'LMIC',BRA:'UMIC',
+  CAN:'HIC',CHE:'HIC',CHL:'HIC',CIV:'LMIC',CMR:'LMIC',COL:'UMIC',CRI:'UMIC',CZE:'HIC',
+  DEU:'HIC',DNK:'HIC',DZA:'LMIC',ECU:'UMIC',EGY:'LMIC',ESP:'HIC',FRA:'HIC',GBR:'HIC',
+  GHA:'LMIC',GRC:'HIC',HND:'LMIC',HRV:'HIC',HUN:'HIC',IDN:'LMIC',IRN:'LMIC',ISL:'HIC',
+  ITA:'HIC',JPN:'HIC',KEN:'LMIC',KOR:'HIC',MAR:'LMIC',MEX:'UMIC',NGA:'LMIC',NLD:'HIC',
+  NZL:'HIC',PAN:'UMIC',PER:'UMIC',POL:'HIC',PRK:'LMIC',PRT:'HIC',PRY:'UMIC',QAT:'HIC',
+  RUS:'UMIC',SAU:'HIC',SCG:'UMIC',SEN:'LMIC',SRB:'UMIC',SVK:'HIC',SVN:'HIC',SWE:'HIC',
+  SYR:'LMIC',TGO:'LIC',TTO:'HIC',TUN:'LMIC',TUR:'UMIC',UKR:'LMIC',URY:'HIC',USA:'HIC',
+  UZB:'LMIC',ZAF:'UMIC'
+};
+
+const TOURNAMENT_UMI = {
+  "FIFA World Cup 2006":0.18,"FIFA World Cup 2010":0.22,"FIFA World Cup 2014":0.28,
+  "FIFA World Cup 2018":0.58,"FIFA World Cup 2022":0.65,"FIFA World Cup 2026":0.82
+};
+
+const TOURNAMENT_YEAR_KEY = {
+  "FIFA World Cup 2006":2005,"FIFA World Cup 2010":2009,"FIFA World Cup 2014":2013,
+  "FIFA World Cup 2018":2017,"FIFA World Cup 2022":2021,"FIFA World Cup 2026":2021
+};
+
+const HOME_NATION_FLAG = {England:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',Wales:'🏴󠁧󠁢󠁷󠁬󠁳󠁿',Scotland:'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Northern Ireland':'🏴󠁧󠁢󠁮󠁩󠁲󠁿'};
+
+const COUNTRY_FLAGS = {
+  ALB:'🇦🇱',AGO:'🇦🇴',ARG:'🇦🇷',AUS:'🇦🇺',BEL:'🇧🇪',BIH:'🇧🇦',BOL:'🇧🇴',BRA:'🇧🇷',
+  CAN:'🇨🇦',CHE:'🇨🇭',CHL:'🇨🇱',CIV:'🇨🇮',CMR:'🇨🇲',COL:'🇨🇴',CRI:'🇨🇷',CZE:'🇨🇿',
+  DEU:'🇩🇪',DNK:'🇩🇰',DZA:'🇩🇿',ECU:'🇪🇨',EGY:'🇪🇬',ESP:'🇪🇸',FRA:'🇫🇷',GBR:'🇬🇧',
+  GHA:'🇬🇭',GRC:'🇬🇷',HND:'🇭🇳',HRV:'🇭🇷',HUN:'🇭🇺',IDN:'🇮🇩',IRN:'🇮🇷',ISL:'🇮🇸',
+  ITA:'🇮🇹',JPN:'🇯🇵',KEN:'🇰🇪',KOR:'🇰🇷',MAR:'🇲🇦',MEX:'🇲🇽',NGA:'🇳🇬',NLD:'🇳🇱',
+  NZL:'🇳🇿',PAN:'🇵🇦',PER:'🇵🇪',POL:'🇵🇱',PRK:'🇰🇵',PRT:'🇵🇹',PRY:'🇵🇾',QAT:'🇶🇦',
+  RUS:'🇷🇺',SAU:'🇸🇦',SCG:'🇷🇸',SEN:'🇸🇳',SRB:'🇷🇸',SVK:'🇸🇰',SVN:'🇸🇮',SWE:'🇸🇪',
+  SYR:'🇸🇾',TGO:'🇹🇬',TTO:'🇹🇹',TUN:'🇹🇳',TUR:'🇹🇷',UKR:'🇺🇦',URY:'🇺🇾',USA:'🇺🇸',
+  UZB:'🇺🇿',ZAF:'🇿🇦'
+};
+
+function computePNHIS(team, tournamentKey) {
+  const yk = TOURNAMENT_YEAR_KEY[tournamentKey];
+  const iso = team.iso3;
+  const whoData = WHO_HEALTH_DATA[iso] && WHO_HEALTH_DATA[iso][yk];
+  const reg = REGULATORY_SCORES[iso] || {hfss:0.3,alcohol:0.4,gambling:0.3};
+  const tournamentData = WC_TEAMS[tournamentKey];
+
+  // Build BHVI raw values
+  let raw = {};
+  if (whoData) {
+    raw.obesity = whoData.obesity || 0;
+    raw.child_obesity = whoData.obesity * 0.7; // proxy
+    raw.alcohol_pc = whoData.alcohol_pc !== null && whoData.alcohol_pc !== undefined ? whoData.alcohol_pc : 0;
+    raw.ncd_mort = whoData.ncd_mort || 0;
+    raw.diabetes = whoData.diabetes || 0;
+    raw.inactivity = whoData.inactivity || 0;
+    raw.life_exp = whoData.life_exp || 70;
+    raw.gdp_pc = whoData.gdp_pc || 2000;
+  } else {
+    raw = {obesity:20,child_obesity:14,alcohol_pc:5,ncd_mort:500,diabetes:10,inactivity:30,life_exp:72,gdp_pc:5000};
+  }
+
+  // Get all teams for normalization in this tournament
+  const allTeams = tournamentData.teams;
+  const allWho = allTeams.map(t => {
+    const d = WHO_HEALTH_DATA[t.iso3] && WHO_HEALTH_DATA[t.iso3][yk];
+    return d ? {
+      obesity: d.obesity||0,
+      child_obesity: (d.obesity||0)*0.7,
+      alcohol_pc: d.alcohol_pc !== null && d.alcohol_pc !== undefined ? d.alcohol_pc : 0,
+      ncd_mort: d.ncd_mort||0,
+      diabetes: d.diabetes||0,
+      inactivity: d.inactivity||0,
+      life_exp: d.life_exp||70,
+      gdp_pc: d.gdp_pc||2000
+    } : {obesity:20,child_obesity:14,alcohol_pc:5,ncd_mort:500,diabetes:10,inactivity:30,life_exp:72,gdp_pc:5000};
+  });
+
+  function minMax(field) {
+    const vals = allWho.map(d => d[field]);
+    return {min:Math.min(...vals), max:Math.max(...vals)};
+  }
+  function norm(val, field, invert) {
+    const {min,max} = minMax(field);
+    if (max===min) return 0.5;
+    let n = (val-min)/(max-min);
+    return invert ? 1-n : n;
+  }
+
+  // BHVI weighted sum (0–100)
+  const bhvi = 100 * (
+    norm(raw.obesity,'obesity',false)*0.20 +
+    norm(raw.child_obesity,'child_obesity',false)*0.10 +
+    norm(raw.alcohol_pc,'alcohol_pc',false)*0.20 +
+    norm(raw.ncd_mort,'ncd_mort',false)*0.15 +
+    norm(raw.diabetes,'diabetes',false)*0.10 +
+    norm(raw.inactivity,'inactivity',false)*0.10 +
+    norm(raw.life_exp,'life_exp',true)*0.05 +
+    norm(raw.gdp_pc,'gdp_pc',true)*0.10
+  );
+
+  // CED — raw value then normalise across tournament
+  const umi = TOURNAMENT_UMI[tournamentKey];
+  const meanRps = (reg.hfss + reg.alcohol + reg.gambling) / 3;
+  const cedRaw = team.matches * umi * (1 - meanRps);
+
+  // Compute CED for all teams in tournament for normalisation
+  const allCed = allTeams.map(t => {
+    const tr = REGULATORY_SCORES[t.iso3] || {hfss:0.3,alcohol:0.4,gambling:0.3};
+    const mrps = (tr.hfss+tr.alcohol+tr.gambling)/3;
+    return t.matches * umi * (1-mrps);
+  });
+  const cedMin = Math.min(...allCed), cedMax = Math.max(...allCed);
+  const ced = cedMax===cedMin ? 50 : ((cedRaw-cedMin)/(cedMax-cedMin))*100;
+
+  // RGS — 0–100 (higher = bigger regulatory gap = more risk)
+  const rgs = (1 - meanRps) * 100;
+
+  // PHBP bonus (capped 25)
+  const isHost = tournamentData.host===iso || (tournamentData.coHosts && tournamentData.coHosts.includes(iso));
+  const activityBenefit = (raw.inactivity/100)*10;
+  const econBenefit = isHost ? 5 : 2;
+  const phbp = Math.min(25, Math.max(0, activityBenefit + econBenefit));
+
+  // Final score
+  const pnhis = -(bhvi*0.35 + ced*0.40 + rgs*0.25) + phbp;
+  const hasWhoData = !!whoData;
+
+  return {
+    pnhis: Math.round(pnhis*10)/10,
+    bhvi: Math.round(bhvi*10)/10,
+    ced: Math.round(ced*10)/10,
+    rgs: Math.round(rgs*10)/10,
+    phbp: Math.round(phbp*10)/10,
+    hasWhoData
+  };
+}
+
+function pnhisColor(score) {
+  if (score > 0) return 'score-low';
+  if (score > -30) return 'score-med';
+  if (score > -60) return 'score-high';
+  return 'score-high';
+}
+
+function pnhisStyle(score) {
+  if (score > 0) return 'color:#34d399';
+  if (score > -30) return 'color:#fbbf24';
+  if (score > -60) return 'color:#fb923c';
+  return 'color:#f87171';
+}
+
+function roundBadge(round) {
+  const styles = {
+    W:    'background:rgba(234,179,8,0.2);color:#fbbf24;border:1px solid rgba(234,179,8,0.4)',
+    RU:   'background:rgba(148,163,184,0.2);color:#cbd5e1;border:1px solid rgba(148,163,184,0.3)',
+    SF:   'background:rgba(180,120,60,0.2);color:#d97706;border:1px solid rgba(180,120,60,0.4)',
+    QF:   'background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3)',
+    R16:  'background:rgba(6,182,212,0.15);color:#22d3ee;border:1px solid rgba(6,182,212,0.3)',
+    GS:   'background:rgba(100,116,139,0.15);color:#94a3b8;border:1px solid rgba(100,116,139,0.3)',
+    TBD:  'background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.3)',
+  };
+  return `<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;${styles[round]||styles.GS}">${round}</span>`;
+}
+
+function renderNationsTournament() {
+  const sel = document.getElementById('nations-tournament-sel').value;
+  const sortBy = document.getElementById('nations-sort-sel').value;
+  const roundFilter = document.getElementById('nations-round-sel').value;
+  const tournament = WC_TEAMS[sel];
+  if (!tournament) return;
+
+  let teams = tournament.teams.map(t => ({...t, scores: computePNHIS(t, sel)}));
+
+  if (roundFilter !== 'all') teams = teams.filter(t => t.round === roundFilter);
+
+  const roundOrder = {W:6,RU:5,SF:4,QF:3,R16:2,GS:1,TBD:3.5};
+  if (sortBy === 'pnhis') teams.sort((a,b) => b.scores.pnhis - a.scores.pnhis);
+  else if (sortBy === 'bhvi') teams.sort((a,b) => b.scores.bhvi - a.scores.bhvi);
+  else if (sortBy === 'ced') teams.sort((a,b) => b.scores.ced - a.scores.ced);
+  else if (sortBy === 'round') teams.sort((a,b) => (roundOrder[b.round]||0)-(roundOrder[a.round]||0));
+  else teams.sort((a,b) => a.name.localeCompare(b.name));
+
+  const flag = t => t.homeNation ? (HOME_NATION_FLAG[t.homeNation]||'🏳️') : (COUNTRY_FLAGS[t.iso3]||'🏳️');
+  const nameNote = t => t.homeNation ? ` <span style="font-size:10px;color:var(--text3)">(GBR data)</span>` : '';
+  const hostNote = t => {
+    if (tournament.host === t.iso3) return ' <span style="font-size:10px;color:var(--amber)">★ Host</span>';
+    if (tournament.coHosts && tournament.coHosts.includes(t.iso3)) return ' <span style="font-size:10px;color:var(--amber)">★ Co-host</span>';
+    return '';
+  };
+
+  document.getElementById('nations-tbody').innerHTML = teams.map((t,i) => `
+    <tr>
+      <td style="color:var(--text3);font-weight:600">${i+1}</td>
+      <td style="font-weight:600">${flag(t)} ${t.name}${nameNote(t)}${hostNote(t)}</td>
+      <td style="color:var(--text3)">${t.group}</td>
+      <td>${roundBadge(t.round)}</td>
+      <td style="color:var(--text3);text-align:center">${t.fifaRank}</td>
+      <td><span style="font-size:14px;font-weight:800;${pnhisStyle(t.scores.pnhis)}">${t.scores.pnhis}</span></td>
+      <td><span style="font-size:11px;padding:2px 7px;border-radius:10px;background:rgba(239,68,68,0.12);color:#f87171">${t.scores.bhvi}</span></td>
+      <td><span style="font-size:11px;padding:2px 7px;border-radius:10px;background:rgba(249,115,22,0.12);color:#fb923c">${t.scores.ced}</span></td>
+      <td><span style="font-size:11px;padding:2px 7px;border-radius:10px;background:rgba(139,92,246,0.12);color:#a78bfa">${t.scores.rgs}</span></td>
+      <td><span style="font-size:11px;padding:2px 7px;border-radius:10px;background:rgba(16,185,129,0.12);color:#34d399">+${t.scores.phbp}</span></td>
+      <td style="font-size:11px">${t.scores.hasWhoData ? '<span style="color:var(--green)">✓</span>' : '<span style="color:var(--amber)" title="No WHO data — fallback used">~</span>'}</td>
+    </tr>`).join('');
+}
+
+function populateCountrySelect() {
+  const all = new Map();
+  Object.values(WC_TEAMS).forEach(t => t.teams.forEach(tm => {
+    if (!all.has(tm.iso3)) all.set(tm.iso3, tm.name);
+  }));
+  const sorted = [...all.entries()].sort((a,b)=>a[1].localeCompare(b[1]));
+  const sel = document.getElementById('nations-country-sel');
+  sel.innerHTML = sorted.map(([iso,name]) => `<option value="${iso}">${name}</option>`).join('');
+}
+
+function renderNationsCountry() {
+  const iso = document.getElementById('nations-country-sel').value;
+  const appearances = [];
+  Object.entries(WC_TEAMS).forEach(([tkey, tdata]) => {
+    const team = tdata.teams.find(t => t.iso3 === iso);
+    if (team) {
+      const scores = computePNHIS(team, tkey);
+      const yk = TOURNAMENT_YEAR_KEY[tkey];
+      const who = WHO_HEALTH_DATA[iso] && WHO_HEALTH_DATA[iso][yk];
+      appearances.push({tkey, year:parseInt(tkey.match(/\d+/)[0]), team, scores, who});
+    }
+  });
+  if (!appearances.length) {
+    document.getElementById('nations-country-detail').innerHTML = '<p style="color:var(--text3);padding:16px">No World Cup appearances found.</p>';
+    return;
+  }
+  appearances.sort((a,b)=>a.year-b.year);
+
+  const labels = appearances.map(a=>a.year.toString());
+  const pnhisVals = appearances.map(a=>a.scores.pnhis);
+
+  destroyChart('chart-nations-timeline');
+  destroyChart('chart-nations-health');
+
+  const ctx1 = document.getElementById('chart-nations-timeline');
+  if (ctx1) {
+    charts['chart-nations-timeline'] = new Chart(ctx1, {
+      type:'bar',
+      data:{labels, datasets:[{
+        label:'PNHIS Score', data:pnhisVals,
+        backgroundColor: pnhisVals.map(v=>v>0?'rgba(16,185,129,0.7)':v>-30?'rgba(245,158,11,0.7)':v>-60?'rgba(249,115,22,0.7)':'rgba(239,68,68,0.7)'),
+        borderColor: pnhisVals.map(v=>v>0?'#10b981':v>-30?'#f59e0b':v>-60?'#f97316':'#ef4444'),
+        borderWidth:1
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a2235',borderColor:'#2a3650',borderWidth:1,titleColor:'#e2e8f0',bodyColor:'#94a3b8'}},scales:{x:{grid:{color:'rgba(42,54,80,0.5)'},ticks:{color:'#64748b'},title:{display:true,text:'Tournament year',color:'#64748b',font:{size:11}}},y:{grid:{color:'rgba(42,54,80,0.5)'},ticks:{color:'#64748b'},title:{display:true,text:'PNHIS Score',color:'#64748b',font:{size:11}}}}}
+    });
+  }
+
+  // Health indicators chart
+  const whoKeys = appearances.filter(a=>a.who);
+  if (whoKeys.length > 0) {
+    const hlabels = whoKeys.map(a=>a.year.toString());
+    makeBarChart('chart-nations-health', hlabels, [
+      {label:'Obesity %',   data:whoKeys.map(a=>a.who.obesity),   backgroundColor:'rgba(249,115,22,0.7)',  type:'bar'},
+      {label:'Inactivity %',data:whoKeys.map(a=>a.who.inactivity),backgroundColor:'rgba(139,92,246,0.7)', type:'bar'},
+      {label:'Diabetes %',  data:whoKeys.map(a=>a.who.diabetes),  backgroundColor:'rgba(239,68,68,0.7)',   type:'bar'},
+    ], {xTitle:'Tournament year',yTitle:'Prevalence (%)',extra:{barPercentage:0.6}});
+  }
+
+  // Detail table
+  const flag = t => t.homeNation ? (HOME_NATION_FLAG[t.homeNation]||'🏳️') : (COUNTRY_FLAGS[t.iso3]||'🏳️');
+  document.getElementById('nations-country-detail').innerHTML = `
+    <div class="section-title" style="margin-bottom:12px">${flag(appearances[0].team)} ${appearances[0].team.name} — Tournament History</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Year</th><th>Round</th><th>FIFA Rank</th><th>PNHIS</th><th>BHVI</th><th>CED</th><th>RGS</th><th>Obesity %</th><th>Inactivity %</th><th>GDP/cap USD</th></tr></thead>
+      <tbody>${appearances.map(a=>`<tr>
+        <td style="font-weight:600">${a.year}</td>
+        <td>${roundBadge(a.team.round)}</td>
+        <td style="color:var(--text3);text-align:center">${a.team.fifaRank}</td>
+        <td style="font-weight:800;${pnhisStyle(a.scores.pnhis)}">${a.scores.pnhis}</td>
+        <td>${a.scores.bhvi}</td><td>${a.scores.ced}</td><td>${a.scores.rgs}</td>
+        <td>${a.who?a.who.obesity.toFixed(1):'—'}</td>
+        <td>${a.who?a.who.inactivity.toFixed(1):'—'}</td>
+        <td>${a.who&&a.who.gdp_pc?'$'+Math.round(a.who.gdp_pc).toLocaleString():'—'}</td>
+      </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+function renderNationsScatter() {
+  const sel = document.getElementById('nations-scatter-sel').value;
+  const colorBy = document.getElementById('nations-scatter-color').value;
+  const tournament = WC_TEAMS[sel];
+  if (!tournament) return;
+
+  const roundNum = {GS:1,R16:2,QF:3,SF:4,RU:5,W:6,TBD:2.5};
+  const incomeColors = {HIC:'rgba(59,130,246,0.75)',UMIC:'rgba(249,115,22,0.75)',LMIC:'rgba(245,158,11,0.75)',LIC:'rgba(239,68,68,0.75)'};
+  const incomeLabels = {HIC:'High income',UMIC:'Upper-middle income',LMIC:'Lower-middle income',LIC:'Low income'};
+
+  const teamData = tournament.teams.map(t => {
+    const scores = computePNHIS(t, sel);
+    const pop = POP_M[t.iso3] || 10;
+    const ig = INCOME_GROUP[t.iso3] || 'UMIC';
+    return {t, scores, pop, ig, x: roundNum[t.round]||1.5, y: scores.pnhis};
+  });
+
+  destroyChart('chart-nations-scatter');
+  const ctx = document.getElementById('chart-nations-scatter');
+  if (!ctx) return;
+
+  const groups = colorBy==='income'
+    ? [...new Set(teamData.map(d=>d.ig))].sort()
+    : ['HIC','UMIC','LMIC','LIC'];
+
+  const datasets = groups.map(g => ({
+    label: incomeLabels[g]||g,
+    data: teamData.filter(d=>(colorBy==='income'?d.ig:d.ig)===g).map(d=>({
+      x:d.x, y:d.y, r:Math.max(4,Math.sqrt(d.pop)*1.8),
+      name:d.t.name, round:d.t.round, rank:d.t.fifaRank, pnhis:d.scores.pnhis
+    })),
+    backgroundColor: incomeColors[g]||'rgba(99,102,241,0.7)',
+    borderColor: incomeColors[g]||'rgba(99,102,241,0.7)',
+    borderWidth:1
+  }));
+
+  charts['chart-nations-scatter'] = new Chart(ctx, {
+    type:'bubble',
+    data:{datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,labels:{color:'#94a3b8',boxWidth:12,font:{size:11}}},
+        tooltip:{
+          backgroundColor:'#1a2235',borderColor:'#2a3650',borderWidth:1,
+          titleColor:'#e2e8f0',bodyColor:'#94a3b8',
+          callbacks:{
+            title: items => items[0].raw.name||'',
+            label: item => {
+              const d = item.raw;
+              return [`PNHIS: ${d.pnhis}`, `Round: ${d.round}`, `FIFA Rank: ${d.rank}`];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{
+          grid:{color:'rgba(42,54,80,0.5)'},ticks:{color:'#64748b',callback:v=>(['','GS','R16','QF','SF','Final'][Math.round(v)])||''},
+          title:{display:true,text:'Round reached',color:'#64748b',font:{size:11}},
+          min:0.5,max:6.5
+        },
+        y:{
+          grid:{color:'rgba(42,54,80,0.5)'},ticks:{color:'#64748b'},
+          title:{display:true,text:'PNHIS Score',color:'#64748b',font:{size:11}}
+        }
+      }
+    }
+  });
+}
+
+function switchNTab(tab) {
+  ['tournament','country','scatter','method'].forEach(t => {
+    document.getElementById(`nsub-${t}`).style.display = t===tab?'block':'none';
+    document.getElementById(`ntab-${t}`).classList.toggle('active',t===tab);
+  });
+  if (tab==='country') renderNationsCountry();
+  if (tab==='scatter') renderNationsScatter();
+}
+
+function renderNations() {
+  populateCountrySelect();
+  renderNationsTournament();
 }
 
 // ===== INIT =====
