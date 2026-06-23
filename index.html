@@ -1439,47 +1439,86 @@
 
       <!-- SPONSOR NETWORK VIEW -->
       <div class="view" id="view-network">
-        <div class="section">
-          <div class="section-title">Sponsor Network — Commercial Relationship Map</div>
-          <div class="card" style="margin-bottom:16px;padding:14px 18px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text2);line-height:1.6">
-            <strong style="color:var(--text)">How to read this diagram:</strong> Nodes = 2026 FIFA sponsors. Edges = known commercial relationships that compound health harm.
-            <span style="color:#f59e0b">■ Amber (supply chain)</span> links show how product relationships amplify single-sponsor impact.
-            <span style="color:#ec4899">■ Pink (data)</span> links show how tech/data companies enable gambling operators.
-            <span style="color:#ef4444">■ Red (ownership)</span> links show corporate parent–subsidiary relationships.
-            <span style="color:#3b82f6">■ Blue (amplification)</span> links show social media platforms that carry advertising for harmful sponsors.
-            Node size is proportional to estimated sponsorship fee.
+  <div class="section">
+    <div class="section-title">Sponsor Network — Commercial Relationship Map</div>
+    <div class="section-sub" style="margin-bottom:16px;color:var(--text3)">Three-layer network: FIFA sponsors (large nodes) → Kit manufacturers (medium, hexagonal) → Local/host sponsors (small nodes). Edges show commercial relationships that compound health harm. Select a tournament to compare how the network has evolved.</div>
+
+    <!-- Tournament selector -->
+    <div class="card" style="padding:12px 18px;margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:12px;font-weight:600;color:var(--text2);margin-right:4px">Tournament:</span>
+      <button class="net-yr-btn" data-yr="2026" onclick="setNetYear('2026',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:12px;cursor:pointer">2026 USA/CAN/MEX</button>
+      <button class="net-yr-btn" data-yr="2022" onclick="setNetYear('2022',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">2022 Qatar</button>
+      <button class="net-yr-btn" data-yr="2018" onclick="setNetYear('2018',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">2018 Russia</button>
+      <button class="net-yr-btn" data-yr="2014" onclick="setNetYear('2014',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">2014 Brazil</button>
+      <button class="net-yr-btn" data-yr="2010" onclick="setNetYear('2010',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">2010 S.Africa</button>
+      <button class="net-yr-btn" data-yr="2006" onclick="setNetYear('2006',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">2006 Germany</button>
+    </div>
+
+    <!-- Layer & edge type filters -->
+    <div class="card" style="padding:12px 18px;margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--text2);font-weight:600">Layers:</span>
+        <label style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="net-layer-sponsors" checked onchange="applyNetFilters()"> FIFA Sponsors</label>
+        <label style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="net-layer-kits" checked onchange="applyNetFilters()"> Kit Manufacturers</label>
+        <label style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="net-layer-local" checked onchange="applyNetFilters()"> Local/Host Sponsors</label>
+      </div>
+      <div style="width:1px;height:24px;background:var(--border)"></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--text2);font-weight:600">Edge type:</span>
+        <button id="net-filter-all" onclick="setNetFilter('all')" style="padding:4px 12px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:11px;cursor:pointer">All</button>
+        <button id="net-filter-supply" onclick="setNetFilter('supply')" style="padding:4px 12px;border-radius:20px;border:1px solid #f59e0b;background:transparent;color:#f59e0b;font-size:11px;cursor:pointer">Supply</button>
+        <button id="net-filter-data" onclick="setNetFilter('data')" style="padding:4px 12px;border-radius:20px;border:1px solid #ec4899;background:transparent;color:#ec4899;font-size:11px;cursor:pointer">Data</button>
+        <button id="net-filter-ownership" onclick="setNetFilter('ownership')" style="padding:4px 12px;border-radius:20px;border:1px solid #ef4444;background:transparent;color:#ef4444;font-size:11px;cursor:pointer">Ownership</button>
+        <button id="net-filter-amplification" onclick="setNetFilter('amplification')" style="padding:4px 12px;border-radius:20px;border:1px solid #3b82f6;background:transparent;color:#3b82f6;font-size:11px;cursor:pointer">Amplification</button>
+        <button id="net-filter-kit" onclick="setNetFilter('kit')" style="padding:4px 12px;border-radius:20px;border:1px solid #10b981;background:transparent;color:#10b981;font-size:11px;cursor:pointer">Kit Deal</button>
+      </div>
+    </div>
+
+    <!-- Info box -->
+    <div class="card" style="padding:12px 18px;margin-bottom:12px;font-size:12px;color:var(--text2);line-height:1.6">
+      <strong style="color:var(--text)">Three layers:</strong>
+      <span style="color:#e2e8f0">● Large circles</span> = official FIFA sponsors (size ∝ fee).
+      <span style="color:#a78bfa">◆ Medium diamonds</span> = kit manufacturers (Adidas, Nike, Puma — present at every tournament, not official FIFA sponsors but parallel commercial layer).
+      <span style="color:#34d399">● Small circles</span> = local/host-nation commercial partners and broadcast operators.
+      Nodes are draggable. Hover for detail.
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;position:relative">
+      <svg id="sponsor-network-svg" style="width:100%;height:600px;background:var(--bg2);display:block"></svg>
+      <div id="network-tooltip" style="display:none;position:fixed;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text);pointer-events:none;z-index:9999;max-width:240px;line-height:1.6"></div>
+    </div>
+
+    <!-- Legend -->
+    <div class="card" style="margin-top:12px;padding:14px 18px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600">Legend</div>
+      <div style="display:flex;flex-wrap:wrap;gap:20px;font-size:11px;color:var(--text2)">
+        <div>
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px">Node colour = Harm category</div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f97316;margin-right:3px"></span>HFSS Food</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#a855f7;margin-right:3px"></span>Alcohol</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#6b7280;margin-right:3px"></span>Fossil Fuel</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ec4899;margin-right:3px"></span>Gambling</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;margin-right:3px"></span>Tech/Neutral</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#a78bfa;margin-right:3px"></span>Kit Manufacturer</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#34d399;margin-right:3px"></span>Local/Host Sponsor</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#64748b;margin-right:3px"></span>Other</span>
           </div>
-          <div class="card" style="padding:12px 18px;margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-            <span style="font-size:12px;color:var(--text2);margin-right:4px">Filter edges:</span>
-            <button id="net-filter-all" onclick="setNetFilter('all')" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:12px;cursor:pointer">All</button>
-            <button id="net-filter-supply" onclick="setNetFilter('supply')" style="padding:5px 14px;border-radius:20px;border:1px solid #f59e0b;background:transparent;color:#f59e0b;font-size:12px;cursor:pointer">Supply Chain</button>
-            <button id="net-filter-data" onclick="setNetFilter('data')" style="padding:5px 14px;border-radius:20px;border:1px solid #ec4899;background:transparent;color:#ec4899;font-size:12px;cursor:pointer">Data</button>
-            <button id="net-filter-ownership" onclick="setNetFilter('ownership')" style="padding:5px 14px;border-radius:20px;border:1px solid #ef4444;background:transparent;color:#ef4444;font-size:12px;cursor:pointer">Ownership</button>
-            <button id="net-filter-amplification" onclick="setNetFilter('amplification')" style="padding:5px 14px;border-radius:20px;border:1px solid #3b82f6;background:transparent;color:#3b82f6;font-size:12px;cursor:pointer">Amplification</button>
-          </div>
-          <div class="card" style="padding:0;overflow:hidden;position:relative">
-            <svg id="sponsor-network-svg" style="width:100%;height:520px;background:var(--bg2);display:block"></svg>
-            <div id="network-tooltip" style="display:none;position:fixed;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text);pointer-events:none;z-index:9999;max-width:220px;line-height:1.6"></div>
-          </div>
-          <div class="card" style="margin-top:12px;padding:14px 18px">
-            <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600">Legend</div>
-            <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:11px;color:var(--text2)">
-              <div style="font-weight:600;color:var(--text);width:100%;margin-bottom:2px">Node colour = Harm category</div>
-              <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f97316;margin-right:4px"></span>HFSS Food</span>
-              <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#a855f7;margin-right:4px"></span>Alcohol</span>
-              <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#6b7280;margin-right:4px"></span>Fossil Fuel</span>
-              <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ec4899;margin-right:4px"></span>Gambling</span>
-              <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;margin-right:4px"></span>Tech/Neutral</span>
-              <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#64748b;margin-right:4px"></span>Other</span>
-              <div style="font-weight:600;color:var(--text);width:100%;margin-top:6px;margin-bottom:2px">Edge colour = Relationship type</div>
-              <span><span style="display:inline-block;width:20px;height:3px;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>Supply chain</span>
-              <span><span style="display:inline-block;width:20px;height:3px;background:#ec4899;margin-right:4px;vertical-align:middle"></span>Data/platform</span>
-              <span><span style="display:inline-block;width:20px;height:3px;background:#ef4444;margin-right:4px;vertical-align:middle"></span>Ownership</span>
-              <span><span style="display:inline-block;width:20px;height:3px;background:#3b82f6;margin-right:4px;vertical-align:middle"></span>Amplification</span>
-            </div>
+        </div>
+        <div>
+          <div style="font-weight:600;color:var(--text);margin-bottom:4px">Edge colour = Relationship</div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <span><span style="display:inline-block;width:20px;height:3px;background:#f59e0b;margin-right:3px;vertical-align:middle"></span>Supply chain</span>
+            <span><span style="display:inline-block;width:20px;height:3px;background:#ec4899;margin-right:3px;vertical-align:middle"></span>Data/platform</span>
+            <span><span style="display:inline-block;width:20px;height:3px;background:#ef4444;margin-right:3px;vertical-align:middle"></span>Ownership</span>
+            <span><span style="display:inline-block;width:20px;height:3px;background:#3b82f6;margin-right:3px;vertical-align:middle"></span>Amplification</span>
+            <span><span style="display:inline-block;width:20px;height:3px;background:#10b981;margin-right:3px;vertical-align:middle"></span>Kit deal</span>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
 
       <!-- GLOBAL MAP VIEW -->
       <div class="view" id="view-geomap">
@@ -5098,167 +5137,384 @@ function renderDataGaps() {
     </tr>`).join('')}</tbody></table>`;
 }
 
-// ===== SPONSOR NETWORK =====
+// ===== SPONSOR NETWORK — MULTI-YEAR WITH LAYERS =====
 
-const SPONSOR_EDGES = [
-  {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
-  {source:"Coca-Cola", target:'Frito-Lay', type:'supply', label:'Co-branded snack deals'},
-  {source:"AB InBev", target:"McDonald's", type:'supply', label:'Alcohol in McCafé/stadiums'},
-  {source:"Mengniu Dairy", target:"McDonald's", type:'supply', label:'Dairy supplier (China)'},
-  {source:'ADI Predictstreet', target:'Betano', type:'data', label:'Betting data feed'},
-  {source:'ADI Predictstreet', target:'Kraken', type:'data', label:'Real-time odds/data'},
-  {source:'Vivo', target:'TikTok', type:'data', label:'Device + platform integration'},
-  {source:'Lenovo', target:'TikTok', type:'data', label:'Device + platform integration'},
-  {source:'Hisense', target:'TikTok', type:'data', label:'Smart TV integration'},
-  {source:'Frito-Lay', target:'Pepsi', type:'ownership', label:'PepsiCo subsidiary'},
-  {source:'Qatar Airways', target:'Aramco', type:'ownership', label:'State asset (Qatar/Saudi)'},
-  {source:'TikTok', target:'Betano', type:'amplification', label:'Gambling ad platform'},
-  {source:'TikTok', target:'AB InBev', type:'amplification', label:'Alcohol ad platform'},
-  {source:'TikTok', target:"McDonald's", type:'amplification', label:'HFSS ad platform'},
-  {source:'DoorDash', target:"McDonald's", type:'supply', label:'Delivery partner'},
-  {source:'DoorDash', target:'Frito-Lay', type:'supply', label:'Delivery partner'},
-];
+// Per-tournament edge definitions. 'layer' field: 'sponsor'|'kit'|'local'
+// type: 'supply'|'data'|'ownership'|'amplification'|'kit'
+const ALL_NET_EDGES = {
+  '2026': [
+    // Supply chain
+    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
+    {source:"Coca-Cola", target:'Frito-Lay', type:'supply', label:'Co-branded snack deals'},
+    {source:"AB InBev", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
+    {source:"Mengniu Dairy", target:"McDonald's", type:'supply', label:'Dairy supplier (China)'},
+    {source:'DoorDash', target:"McDonald's", type:'supply', label:'Delivery partner'},
+    {source:'DoorDash', target:'Frito-Lay', type:'supply', label:'Delivery partner'},
+    {source:'Pepsi', target:'Frito-Lay', type:'ownership', label:'PepsiCo subsidiary'},
+    // Data / gambling
+    {source:'ADI Predictstreet', target:'Betano', type:'data', label:'Betting data feed'},
+    {source:'ADI Predictstreet', target:'Kraken', type:'data', label:'Real-time odds/data'},
+    // Device → platform
+    {source:'Vivo', target:'TikTok', type:'data', label:'Device + platform integration'},
+    {source:'Lenovo', target:'TikTok', type:'data', label:'Device + platform integration'},
+    {source:'Hisense', target:'TikTok', type:'data', label:'Smart TV integration'},
+    // Ownership
+    {source:'Qatar Airways', target:'Aramco', type:'ownership', label:'State asset (Qatar/Saudi)'},
+    // Amplification
+    {source:'TikTok', target:'Betano', type:'amplification', label:'Gambling ad platform'},
+    {source:'TikTok', target:'AB InBev', type:'amplification', label:'Alcohol ad platform'},
+    {source:"TikTok", target:"McDonald's", type:'amplification', label:'HFSS ad platform'},
+    {source:'TikTok', target:'Coca-Cola', type:'amplification', label:'HFSS ad platform'},
+    // Kit deals (kit manufacturers → FIFA sponsors they compete with / collaborate with)
+    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner'},
+    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands, both at WC'},
+    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands, both at WC'},
+    // Local sponsors
+    {source:'The Home Depot', target:'American Airlines', type:'supply', label:'US retail-travel bundle'},
+    {source:'Visit Las Vegas', target:'Airbnb', type:'supply', label:'Host city accommodation'},
+    {source:'Cox Enterprises', target:'TikTok', type:'amplification', label:'Broadcast + social cross-sell'},
+  ],
+  '2022': [
+    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
+    {source:"Budweiser", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
+    {source:"AB InBev", target:"Budweiser", type:'ownership', label:'AB InBev owns Budweiser'},
+    {source:'Qatar Airways', target:'QatarEnergy', type:'ownership', label:'State assets — same sovereign'},
+    {source:'Wanda Group', target:'QatarEnergy', type:'data', label:'Chinese capital + Gulf petrostate alignment'},
+    {source:'Vivo', target:'Hisense', type:'data', label:'Chinese tech bloc — shared supply chains'},
+    {source:'Vivo', target:'Mengniu Dairy', type:'ownership', label:'Both under Chinese state-aligned capital'},
+    {source:'Crypto.com', target:'Visa', type:'amplification', label:'Crypto-fiat payment competition'},
+    {source:'Betano', target:'Crypto.com', type:'data', label:'Crypto + gambling — overlapping user base'},
+    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner'},
+    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
+    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
+  ],
+  '2018': [
+    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
+    {source:"Budweiser", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
+    {source:'AB InBev', target:'Budweiser', type:'ownership', label:'AB InBev owns Budweiser'},
+    {source:'Gazprom', target:'Lukoil', type:'ownership', label:'Russian state energy — same sovereign'},
+    {source:'Gazprom', target:'Visa', type:'supply', label:'Gazprom payment infrastructure partner'},
+    {source:'Wanda Group', target:'Alibaba', type:'ownership', label:'Chinese conglomerate bloc'},
+    {source:'Alibaba', target:'Vivo', type:'data', label:'Chinese tech ecosystem'},
+    {source:'Hisense', target:'Vivo', type:'data', label:'Chinese consumer electronics bloc'},
+    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner'},
+    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
+    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
+    {source:"McDonald's", target:'Coca-Cola', type:'supply', label:'Beverage deal — mutual amplification'},
+    {source:'Hyundai-Kia', target:'Vivo', type:'data', label:'Mobility + device integration'},
+  ],
+  '2014': [
+    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
+    {source:"Budweiser", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
+    {source:'AB InBev', target:'Budweiser', type:'ownership', label:'AB InBev owns Budweiser'},
+    {source:'Johnson & Johnson', target:'Visa', type:'amplification', label:'Consumer brand co-marketing'},
+    {source:'Castrol', target:'Hyundai-Kia', type:'supply', label:'Lubricant supplier to automotive'},
+    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner'},
+    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
+    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
+    {source:'Oi Telecom', target:'Coca-Cola', type:'amplification', label:'Brazilian host-sponsor amplification'},
+    {source:"McDonald's", target:'Coca-Cola', type:'supply', label:'Beverage deal'},
+    {source:'APEX', target:'Adidas', type:'supply', label:'Brazil host agency — retail'},
+  ],
+  '2010': [
+    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
+    {source:"Budweiser", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
+    {source:'AB InBev', target:'Budweiser', type:'ownership', label:'AB InBev owns Budweiser'},
+    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner'},
+    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
+    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
+    {source:'MTN', target:'Coca-Cola', type:'amplification', label:'African host-market co-activation'},
+    {source:'Vodacom', target:'MTN', type:'amplification', label:'SA telecom rivals, both WC sponsors'},
+    {source:"McDonald's", target:'Coca-Cola', type:'supply', label:'Beverage deal'},
+    {source:'First National Bank', target:'Vodacom', type:'amplification', label:'SA host sponsors — joint fan activations'},
+    {source:'Adidas', target:'Puma', type:'kit', label:'Rival German sportswear brands'},
+  ],
+  '2006': [
+    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
+    {source:"Budweiser", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
+    {source:'AB InBev', target:'Budweiser', type:'ownership', label:'AB InBev owns Budweiser'},
+    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner + home host brand'},
+    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
+    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
+    {source:'ODDSET', target:'Toto', type:'ownership', label:'German state gambling monopoly entities'},
+    {source:'Deutsche Telekom', target:'Adidas', type:'amplification', label:'German host brand co-marketing'},
+    {source:'EnBW', target:'Deutsche Telekom', type:'amplification', label:'German utility + telco — joint host activation'},
+    {source:"McDonald's", target:'Coca-Cola', type:'supply', label:'Beverage deal'},
+    {source:'DFB', target:'Adidas', type:'kit', label:'German FA kit deal — home advantage'},
+  ],
+};
+
+// Kit manufacturer nodes — present at all tournaments
+// These are NOT official FIFA sponsors but form a parallel commercial layer
+const KIT_BRANDS = {
+  'Adidas': {name:'Adidas', layer:'kit', industry:'Sportswear (Kit)', country:'DE', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:30, website:'https://www.adidas.com'},
+  'Nike':   {name:'Nike',   layer:'kit', industry:'Sportswear (Kit)', country:'US', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:20, website:'https://www.nike.com'},
+  'Puma':   {name:'Puma',   layer:'kit', industry:'Sportswear (Kit)', country:'DE', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:12, website:'https://www.puma.com'},
+};
+
+// Local/host-nation sponsors per tournament — companies active in host country activations
+// but not official FIFA Tier 1/2 global sponsors
+const LOCAL_SPONSORS = {
+  '2026': [
+    {name:'FIFA', layer:'local', industry:'Governing Body', country:'CH', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:0},
+  ],
+  '2022': [
+    {name:'QatarEnergy', layer:'local', industry:'Fossil Fuel', country:'QA', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:20},
+    {name:'Crypto.com', layer:'local', industry:'Cryptocurrency', country:'SG', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:10},
+    {name:'Budweiser', layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
+  ],
+  '2018': [
+    {name:'Gazprom', layer:'local', industry:'Fossil Fuel (Russian state)', country:'RU', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:25},
+    {name:'Lukoil', layer:'local', industry:'Fossil Fuel', country:'RU', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:8},
+    {name:'Alibaba', layer:'local', industry:'Technology / Retail', country:'CN', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:15},
+    {name:'Budweiser', layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
+  ],
+  '2014': [
+    {name:'Oi Telecom', layer:'local', industry:'Telecommunications', country:'BR', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:10},
+    {name:'Apex-Brasil', layer:'local', industry:'Government / Trade Promotion', country:'BR', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:5},
+    {name:'APEX', layer:'local', industry:'Retail / Agency', country:'BR', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:3},
+    {name:'Budweiser', layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
+    {name:'Johnson & Johnson', layer:'local', industry:'Healthcare / FMCG', country:'US', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:8},
+    {name:'Castrol', layer:'local', industry:'Fossil Fuel (Lubricants)', country:'GB', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:8},
+  ],
+  '2010': [
+    {name:'MTN', layer:'local', industry:'Telecommunications', country:'ZA', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:12},
+    {name:'Vodacom', layer:'local', industry:'Telecommunications', country:'ZA', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:10},
+    {name:'First National Bank', layer:'local', industry:'Financial Services', country:'ZA', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:8},
+    {name:'Budweiser', layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
+  ],
+  '2006': [
+    {name:'Deutsche Telekom', layer:'local', industry:'Telecommunications', country:'DE', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:15},
+    {name:'EnBW', layer:'local', industry:'Energy / Fossil Fuel', country:'DE', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:8},
+    {name:'ODDSET', layer:'local', industry:'Gambling (State Lottery)', country:'DE', hfss:0, alc:0, fossil:0, gamble:1, tech:0, fee:5},
+    {name:'Toto', layer:'local', industry:'Gambling (State Lottery)', country:'DE', hfss:0, alc:0, fossil:0, gamble:1, tech:0, fee:3},
+    {name:'DFB', layer:'local', industry:'Football Association', country:'DE', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:0},
+    {name:'Budweiser', layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
+  ],
+};
 
 const EDGE_COLORS = {
-  supply: 'rgba(245,158,11,0.7)',
-  data: 'rgba(236,72,153,0.7)',
-  ownership: 'rgba(239,68,68,0.7)',
+  supply:        'rgba(245,158,11,0.7)',
+  data:          'rgba(236,72,153,0.7)',
+  ownership:     'rgba(239,68,68,0.7)',
   amplification: 'rgba(59,130,246,0.7)',
+  kit:           'rgba(16,185,129,0.6)',
 };
 
 function nodeColor(c) {
-  if (c.hfss) return '#f97316';
-  if (c.alc)  return '#a855f7';
+  if (c.layer === 'kit')   return '#a78bfa';
+  if (c.layer === 'local') {
+    if (c.gamble) return '#ec4899';
+    if (c.fossil) return '#6b7280';
+    if (c.alc)    return '#a855f7';
+    if (c.tech)   return '#34d399';
+    return '#34d399';
+  }
+  if (c.hfss)   return '#f97316';
+  if (c.alc)    return '#a855f7';
   if (c.fossil) return '#6b7280';
   if (c.gamble) return '#ec4899';
-  if (c.tech) return '#3b82f6';
+  if (c.tech)   return '#3b82f6';
   return '#64748b';
 }
 
-let _netFilter = 'all';
-let _netSim = null;
+let _netFilter  = 'all';
+let _netYear    = '2026';
+let _netSim     = null;
+let _netNodes   = [];
+let _netLinks   = [];
+
+function setNetYear(yr, btn) {
+  _netYear = yr;
+  document.querySelectorAll('.net-yr-btn').forEach(b => {
+    b.style.background = 'transparent';
+    b.style.color = 'var(--text2)';
+    b.style.borderColor = 'var(--border)';
+  });
+  if (btn) { btn.style.background = 'var(--accent)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--accent)'; }
+  renderSponsorNetwork();
+}
 
 function setNetFilter(type) {
   _netFilter = type;
   document.querySelectorAll('[id^="net-filter-"]').forEach(b => {
     b.style.background = 'transparent';
-    b.style.color = b.style.borderColor;
   });
   const active = document.getElementById('net-filter-' + type);
   if (active) { active.style.background = active.style.borderColor || 'var(--accent)'; active.style.color = '#fff'; }
-  // re-draw edges visibility
+  applyNetFilters();
+}
+
+function applyNetFilters() {
+  if (typeof d3 === 'undefined') return;
+  const showSponsors = document.getElementById('net-layer-sponsors') ? document.getElementById('net-layer-sponsors').checked : true;
+  const showKits     = document.getElementById('net-layer-kits')     ? document.getElementById('net-layer-kits').checked     : true;
+  const showLocal    = document.getElementById('net-layer-local')    ? document.getElementById('net-layer-local').checked    : true;
+
   const svg = d3.select('#sponsor-network-svg');
-  svg.selectAll('.net-edge').style('opacity', d => (type === 'all' || d.type === type) ? 1 : 0.05);
-  svg.selectAll('.net-edge-label').style('opacity', d => (type === 'all' || d.type === type) ? 1 : 0);
+  svg.selectAll('.net-node').style('opacity', d => {
+    if (d.layer === 'kit'   && !showKits)     return 0.05;
+    if (d.layer === 'local' && !showLocal)    return 0.05;
+    if (d.layer === 'sponsor' && !showSponsors) return 0.05;
+    return 1;
+  });
+  svg.selectAll('.net-label').style('opacity', d => {
+    if (d.layer === 'kit'   && !showKits)     return 0;
+    if (d.layer === 'local' && !showLocal)    return 0;
+    if (d.layer === 'sponsor' && !showSponsors) return 0;
+    return 1;
+  });
+  svg.selectAll('.net-edge').style('opacity', d => {
+    if (_netFilter !== 'all' && d.type !== _netFilter) return 0.03;
+    if (d.type === 'kit' && !showKits) return 0.03;
+    return 0.75;
+  });
 }
 
 function renderSponsorNetwork() {
   if (typeof d3 === 'undefined') return;
   const svgEl = document.getElementById('sponsor-network-svg');
   if (!svgEl) return;
-  // Clear previous
+
   d3.select(svgEl).selectAll('*').remove();
   if (_netSim) { _netSim.stop(); _netSim = null; }
 
-  const sponsors2026 = DATA.companies.filter(c => c.tournament === 'FIFA World Cup 2026');
-  const nameSet = new Set(sponsors2026.map(c => c.name));
+  const yr = _netYear;
+  const tournamentKey = 'FIFA World Cup ' + yr;
 
-  // Build node list — only nodes referenced in edges or all sponsors
-  const nodes = sponsors2026.map(c => ({...c, id: c.name}));
+  // Build node list
+  const sponsorNodes = DATA.companies
+    .filter(c => c.tournament === tournamentKey)
+    .map(c => ({...c, id: c.name, layer: 'sponsor'}));
+
+  const showKits  = document.getElementById('net-layer-kits')  ? document.getElementById('net-layer-kits').checked  : true;
+  const showLocal = document.getElementById('net-layer-local') ? document.getElementById('net-layer-local').checked : true;
+
+  // Kit brands present in KIT_DATA for this year
+  const kitsThisYear = new Set((KIT_DATA || []).filter(k => k.tournament === yr).map(k => k.brand));
+  const kitNodes = Object.values(KIT_BRANDS).filter(k => kitsThisYear.has(k.name));
+
+  const localNodes = (LOCAL_SPONSORS[yr] || []);
+
+  const allNodes = [
+    ...sponsorNodes,
+    ...(showKits  ? kitNodes  : []),
+    ...(showLocal ? localNodes : []),
+  ];
+
+  const nameSet = new Set(allNodes.map(n => n.name));
   const nodeMap = {};
-  nodes.forEach(n => nodeMap[n.name] = n);
+  allNodes.forEach(n => nodeMap[n.name] = n);
 
-  const links = SPONSOR_EDGES.filter(e => nameSet.has(e.source) && nameSet.has(e.target))
-    .map(e => ({...e, source: e.source, target: e.target}));
+  const edgeDefs = ALL_NET_EDGES[yr] || [];
+  const links = edgeDefs
+    .filter(e => nameSet.has(e.source) && nameSet.has(e.target))
+    .map(e => ({...e}));
+
+  _netNodes = allNodes;
+  _netLinks = links;
 
   const W = svgEl.clientWidth || 900;
-  const H = 520;
+  const H = 600;
   const svg = d3.select(svgEl).attr('viewBox', `0 0 ${W} ${H}`);
 
   // Arrow markers
-  ['supply','data','ownership','amplification'].forEach(type => {
-    svg.append('defs').append('marker')
-      .attr('id', 'arrow-' + type)
+  const defs = svg.append('defs');
+  Object.keys(EDGE_COLORS).forEach(type => {
+    defs.append('marker')
+      .attr('id', 'arr-' + yr + '-' + type)
       .attr('viewBox', '0 -5 10 10')
-      .attr('refX', 28).attr('refY', 0)
-      .attr('markerWidth', 6).attr('markerHeight', 6)
+      .attr('refX', 30).attr('refY', 0)
+      .attr('markerWidth', 5).attr('markerHeight', 5)
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
       .attr('fill', EDGE_COLORS[type]);
   });
 
-  const feeMin = d3.min(nodes, d => d.fee) || 1;
-  const feeMax = d3.max(nodes, d => d.fee) || 150;
-  const rScale = d3.scaleSqrt().domain([feeMin, feeMax]).range([8, 28]);
+  const allFees = allNodes.map(n => n.fee || 1).filter(f => f > 0);
+  const feeMin = d3.min(allFees) || 1;
+  const feeMax = d3.max(allFees) || 150;
+  const rScale = d3.scaleSqrt().domain([feeMin, feeMax]).range([6, 26]);
+
+  function nodeR(d) {
+    if (d.layer === 'local') return Math.max(5, rScale(d.fee || 3));
+    if (d.layer === 'kit')   return rScale(d.fee || 20);
+    return rScale(d.fee || 5);
+  }
 
   const link = svg.append('g').selectAll('line')
     .data(links).enter().append('line')
     .attr('class', 'net-edge')
-    .attr('stroke', d => EDGE_COLORS[d.type])
-    .attr('stroke-width', 2)
-    .attr('marker-end', d => `url(#arrow-${d.type})`)
-    .style('opacity', 1);
+    .attr('stroke', d => EDGE_COLORS[d.type] || 'rgba(100,116,139,0.5)')
+    .attr('stroke-width', d => d.type === 'kit' ? 1.5 : 2)
+    .attr('stroke-dasharray', d => d.type === 'kit' ? '5,3' : null)
+    .attr('marker-end', d => `url(#arr-${yr}-${d.type})`)
+    .style('opacity', 0.75);
 
-  const edgeLabel = svg.append('g').selectAll('text')
-    .data(links).enter().append('text')
-    .attr('class', 'net-edge-label')
-    .attr('font-size', 9)
-    .attr('fill', d => EDGE_COLORS[d.type])
-    .attr('text-anchor', 'middle')
-    .style('pointer-events', 'none')
-    .style('opacity', 0)
-    .text(d => d.label);
-
-  const node = svg.append('g').selectAll('circle')
-    .data(nodes).enter().append('circle')
-    .attr('r', d => rScale(d.fee))
-    .attr('fill', d => nodeColor(d))
-    .attr('stroke', '#fff')
-    .attr('stroke-width', 1.5)
+  // Node shapes — kit manufacturers get diamond (polygon), others circle
+  const nodeG = svg.append('g').selectAll('g')
+    .data(allNodes).enter().append('g')
+    .attr('class', 'net-node-g')
     .style('cursor', 'pointer')
     .call(d3.drag()
       .on('start', (event, d) => { if (!event.active) _netSim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
       .on('drag',  (event, d) => { d.fx=event.x; d.fy=event.y; })
       .on('end',   (event, d) => { if (!event.active) _netSim.alphaTarget(0); d.fx=null; d.fy=null; }));
 
-  const label = svg.append('g').selectAll('text')
-    .data(nodes).enter().append('text')
-    .attr('font-size', 10)
-    .attr('fill', 'var(--text2)')
+  // Circles for sponsor & local nodes
+  nodeG.filter(d => d.layer !== 'kit').append('circle')
+    .attr('class', 'net-node')
+    .attr('r', d => nodeR(d))
+    .attr('fill', d => nodeColor(d))
+    .attr('stroke', d => d.layer === 'local' ? '#34d399' : '#fff')
+    .attr('stroke-width', d => d.layer === 'local' ? 1.5 : 1.5)
+    .attr('stroke-dasharray', d => d.layer === 'local' ? '3,2' : null);
+
+  // Diamonds for kit manufacturer nodes
+  nodeG.filter(d => d.layer === 'kit').append('polygon')
+    .attr('class', 'net-node')
+    .attr('points', d => { const r = nodeR(d); return `0,${-r} ${r},0 0,${r} ${-r},0`; })
+    .attr('fill', '#a78bfa')
+    .attr('stroke', '#c4b5fd')
+    .attr('stroke-width', 1.5);
+
+  const labelG = svg.append('g').selectAll('text')
+    .data(allNodes).enter().append('text')
+    .attr('class', 'net-label')
+    .attr('font-size', d => d.layer === 'local' ? 9 : 10)
+    .attr('fill', d => d.layer === 'kit' ? '#c4b5fd' : d.layer === 'local' ? '#6ee7b7' : 'var(--text2)')
     .attr('text-anchor', 'middle')
-    .attr('dy', d => rScale(d.fee) + 13)
+    .attr('dy', d => nodeR(d) + 12)
     .style('pointer-events', 'none')
     .text(d => d.name);
 
   // Tooltip
   const tooltip = document.getElementById('network-tooltip');
-  node.on('mouseover', (event, d) => {
-    const csh = typeof computeCSH === 'function' ? computeCSH(d).toFixed(1) : 'N/A';
-    tooltip.innerHTML = `<strong>${d.name}</strong><br>${d.industry}<br>${d.tier}<br>Fee: ~$${d.fee}M<br>CSH Score: ${csh}`;
+  nodeG.on('mouseover', (event, d) => {
+    const csh = (d.layer === 'sponsor' && typeof computeCSH === 'function') ? computeCSH(d).toFixed(1) : '—';
+    const layerLabel = d.layer === 'kit' ? 'Kit Manufacturer' : d.layer === 'local' ? 'Local/Host Sponsor' : d.tier || 'FIFA Sponsor';
+    tooltip.innerHTML = `<strong>${d.name}</strong><br><em>${d.industry}</em><br>${layerLabel}<br>Est. fee: ~$${d.fee||'?'}M${d.layer==='sponsor'?`<br>CSH Score: ${csh}`:''}`;
     tooltip.style.display = 'block';
   }).on('mousemove', event => {
-    tooltip.style.left = (event.clientX + 12) + 'px';
+    tooltip.style.left = (event.clientX + 14) + 'px';
     tooltip.style.top  = (event.clientY - 10) + 'px';
   }).on('mouseout', () => { tooltip.style.display = 'none'; });
 
-  _netSim = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(links).id(d => d.id).distance(120))
-    .force('charge', d3.forceManyBody().strength(-400))
+  _netSim = d3.forceSimulation(allNodes)
+    .force('link', d3.forceLink(links).id(d => d.name).distance(d => d.type === 'kit' ? 150 : 110))
+    .force('charge', d3.forceManyBody().strength(-350))
     .force('center', d3.forceCenter(W/2, H/2))
-    .force('collision', d3.forceCollide().radius(d => rScale(d.fee) + 6))
+    .force('collision', d3.forceCollide().radius(d => nodeR(d) + 8))
     .on('tick', () => {
       link
         .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-      edgeLabel
-        .attr('x', d => (d.source.x + d.target.x) / 2)
-        .attr('y', d => (d.source.y + d.target.y) / 2);
-      node.attr('cx', d => d.x).attr('cy', d => d.y);
-      label.attr('x', d => d.x).attr('y', d => d.y);
+      nodeG.attr('transform', d => `translate(${d.x},${d.y})`);
+      labelG.attr('x', d => d.x).attr('y', d => d.y);
     });
 
-  // reset filter UI
+  // Reset filter UI
   _netFilter = 'all';
   document.querySelectorAll('[id^="net-filter-"]').forEach(b => { b.style.background = 'transparent'; });
   const allBtn = document.getElementById('net-filter-all');
