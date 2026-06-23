@@ -5225,6 +5225,22 @@ const ALL_NET_EDGES = {
     {source:'Visa',    target:'American Airlines', type:'amplification', label:'Travel payment partnership'},
     {source:'Hyundai-Kia', target:'American Airlines', type:'amplification', label:'Mobility partnership — ground + air travel'},
     {source:'Aramco',  target:'Qatar Airways', type:'amplification', label:'Petrostate aviation fuel supply'},
+    // ── Automotive cluster ──
+    {source:'Valvoline',      target:'Hyundai-Kia',  type:'supply',      label:'Official lubricant — automotive sector partner'},
+    {source:'NAPA Auto Parts',target:'Hyundai-Kia',  type:'supply',      label:'Auto parts distribution — same automotive sector'},
+    {source:'NAPA Auto Parts',target:'Valvoline',    type:'supply',      label:'Auto parts + lubricants retail partnership'},
+    // ── Co-branded / ownership ──
+    {source:'Jack & Coke',   target:'Coca-Cola',    type:'ownership',   label:'Co-branded RTD product — Coca-Cola × Jack Daniel\'s'},
+    {source:'Jack & Coke',   target:'AB InBev',     type:'amplification',label:'AB InBev distributes RTD in key markets'},
+    // ── Food delivery / retail ──
+    {source:'Bringers',      target:'DoorDash',     type:'supply',      label:'On-demand delivery — same sector'},
+    {source:'Bringers',      target:"McDonald's",   type:'amplification',label:'Quick-service food — same audience'},
+    {source:'The Home Depot',target:'American Airlines', type:'amplification', label:'US host brand co-activation'},
+    {source:'Cox Enterprises',target:'TikTok',      type:'amplification',label:'Broadcast + social media cross-sell'},
+    {source:'Visit Las Vegas',target:'Airbnb',      type:'supply',      label:'Host city destination + accommodation'},
+    {source:'Visit Las Vegas',target:'American Airlines', type:'amplification', label:'Host city travel promotion'},
+    // ── Healthcare / wellness ──
+    {source:'Kaiser Permanente',target:'Unilever',  type:'amplification',label:'Health & wellness co-positioning'},
   ],
   '2022': [
     // Every sponsor → FIFA
@@ -5544,9 +5560,64 @@ function renderSponsorNetwork() {
   allNodes.forEach(n => nodeMap[n.name] = n);
 
   const edgeDefs = ALL_NET_EDGES[yr] || [];
-  const links = edgeDefs
+  const explicitLinks = edgeDefs
     .filter(e => nameSet.has(e.source) && nameSet.has(e.target))
     .map(e => ({...e}));
+
+  // ── Auto-generate FIFA spokes for any node with no explicit sponsor→FIFA edge ──
+  // This guarantees zero orphan nodes — every sponsor is anchored to the hub.
+  const hasExplicitFIFA = new Set(
+    explicitLinks.filter(e => e.target === 'FIFA' || e.source === 'FIFA').map(e =>
+      e.target === 'FIFA' ? e.source : e.target
+    )
+  );
+  const autoFIFALinks = allNodes
+    .filter(n => n.layer !== 'hub' && !hasExplicitFIFA.has(n.name))
+    .map(n => ({ source: n.name, target: 'FIFA', type: 'sponsor', label: 'Commercial relationship with FIFA', _auto: true }));
+
+  const links = [...explicitLinks, ...autoFIFALinks];
+
+  // ── Sector grouping: assign angular sector for initial placement ──
+  // Sectors spread around FIFA so similar companies cluster together.
+  const SECTOR_ANGLE = {
+    'Food & Drink':    0,
+    'Alcohol':         30,
+    'Gambling':        60,
+    'Crypto':          90,
+    'Technology':      120,
+    'Automotive':      150,
+    'Airlines & Travel': 195,
+    'Energy':          225,
+    'Finance':         255,
+    'Sportswear':      285,
+    'Healthcare':      315,
+    'Retail & Home':   345,
+  };
+  function sectorAngle(d) {
+    const ind = (d.industry || '').toLowerCase();
+    if (ind.includes('food') || ind.includes('dairy') || ind.includes('snack') || ind.includes('beverage') || ind.includes('drink') || ind.includes('restaurant') || ind.includes('delivery')) return SECTOR_ANGLE['Food & Drink'];
+    if (ind.includes('alcohol') || ind.includes('beer') || ind.includes('spirits') || ind.includes('brewing')) return SECTOR_ANGLE['Alcohol'];
+    if (ind.includes('gambl') || ind.includes('betting') || ind.includes('lottery')) return SECTOR_ANGLE['Gambling'];
+    if (ind.includes('crypto') || ind.includes('digital asset')) return SECTOR_ANGLE['Crypto'];
+    if (ind.includes('tech') || ind.includes('device') || ind.includes('telecom') || ind.includes('platform') || ind.includes('social') || ind.includes('data') || ind.includes('software') || ind.includes('streaming')) return SECTOR_ANGLE['Technology'];
+    if (ind.includes('auto') || ind.includes('vehicle') || ind.includes('motor') || ind.includes('lubricant') || ind.includes('tyre') || ind.includes('parts')) return SECTOR_ANGLE['Automotive'];
+    if (ind.includes('airline') || ind.includes('travel') || ind.includes('accommod') || ind.includes('tourism') || ind.includes('hospitality')) return SECTOR_ANGLE['Airlines & Travel'];
+    if (ind.includes('energy') || ind.includes('fossil') || ind.includes('petro') || ind.includes('oil') || ind.includes('gas') || ind.includes('utility')) return SECTOR_ANGLE['Energy'];
+    if (ind.includes('financ') || ind.includes('payment') || ind.includes('bank') || ind.includes('insurance')) return SECTOR_ANGLE['Finance'];
+    if (ind.includes('sport') || ind.includes('kit') || ind.includes('apparel')) return SECTOR_ANGLE['Sportswear'];
+    if (ind.includes('health') || ind.includes('medical') || ind.includes('pharma')) return SECTOR_ANGLE['Healthcare'];
+    if (ind.includes('retail') || ind.includes('home') || ind.includes('broadcast') || ind.includes('media')) return SECTOR_ANGLE['Retail & Home'];
+    return Math.random() * 360;
+  }
+
+  // Set initial positions: spread in a ring at sector angle + small jitter
+  const RING_R = 220;
+  allNodes.forEach((n, i) => {
+    if (n.layer === 'hub') { n.x = cx; n.y = cy; return; }
+    const angle = (sectorAngle(n) + (Math.random() - 0.5) * 25) * Math.PI / 180;
+    n.x = cx + RING_R * Math.cos(angle);
+    n.y = cy + RING_R * Math.sin(angle);
+  });
 
   _netNodes = allNodes;
   _netLinks = links;
@@ -5589,6 +5660,40 @@ function renderSponsorNetwork() {
 
   // Single group that receives zoom transforms
   const zoomG = svg.append('g').attr('id', 'net-zoom-g');
+
+  // ── Sector label ring (drawn before edges so it sits behind everything) ──
+  const SECTOR_LABELS = [
+    {label:'Food & Drink',     angle:0},
+    {label:'Alcohol',          angle:30},
+    {label:'Gambling',         angle:60},
+    {label:'Crypto',           angle:90},
+    {label:'Technology',       angle:120},
+    {label:'Automotive',       angle:150},
+    {label:'Airlines & Travel',angle:195},
+    {label:'Energy',           angle:225},
+    {label:'Finance',          angle:255},
+    {label:'Sportswear',       angle:285},
+    {label:'Healthcare',       angle:315},
+    {label:'Retail & Media',   angle:345},
+  ];
+  const LABEL_R = 295;
+  const sectorG = zoomG.append('g').attr('class', 'sector-labels').style('pointer-events','none');
+  SECTOR_LABELS.forEach(s => {
+    const a = s.angle * Math.PI / 180;
+    const lx = cx + LABEL_R * Math.cos(a);
+    const ly = cy + LABEL_R * Math.sin(a);
+    // Tick line from cluster edge to label
+    sectorG.append('line')
+      .attr('x1', cx + 230 * Math.cos(a)).attr('y1', cy + 230 * Math.sin(a))
+      .attr('x2', cx + 270 * Math.cos(a)).attr('y2', cy + 270 * Math.sin(a))
+      .attr('stroke', '#cbd5e1').attr('stroke-width', 1).attr('opacity', 0.5);
+    sectorG.append('text')
+      .attr('x', lx).attr('y', ly)
+      .attr('text-anchor', Math.cos(a) < -0.1 ? 'end' : Math.cos(a) > 0.1 ? 'start' : 'middle')
+      .attr('dominant-baseline', 'middle')
+      .attr('font-size', 9).attr('fill', '#94a3b8').attr('font-weight', '500')
+      .text(s.label);
+  });
 
   // Sponsor edges drawn first (behind nodes)
   const sponsorLinks = links.filter(l => l.type === 'sponsor');
@@ -5676,18 +5781,29 @@ function renderSponsorNetwork() {
     tooltip.style.top  = (event.clientY - 10) + 'px';
   }).on('mouseout', () => { tooltip.style.display = 'none'; });
 
-  // Tighter simulation: shorter link distances, weaker repulsion, radial pull toward FIFA
+  // Sector-clustered simulation
+  // forceX/Y pulls each node toward its sector's anchor point on the ring
+  const CLUSTER_R = 200;
   _netSim = d3.forceSimulation(allNodes)
     .force('link', d3.forceLink(links).id(d => d.name)
       .distance(d => {
-        if (d.type === 'sponsor') return 160;  // spoke length from FIFA
-        if (d.type === 'kit')     return 100;
-        return 80;  // inter-sponsor links are short
+        if (d.type === 'sponsor') return 180;
+        if (d.type === 'kit')     return 90;
+        return 60;
       })
-      .strength(d => d.type === 'sponsor' ? 0.8 : 0.4))
-    .force('charge', d3.forceManyBody().strength(d => d.layer === 'hub' ? 0 : -120))
-    .force('center', d3.forceCenter(cx, cy).strength(0.05))
-    .force('collision', d3.forceCollide().radius(d => nodeR(d) + 6))
+      .strength(d => d.type === 'sponsor' ? 0.6 : 0.5))
+    .force('charge', d3.forceManyBody().strength(d => d.layer === 'hub' ? 0 : -80))
+    .force('sectorX', d3.forceX(d => {
+      if (d.layer === 'hub') return cx;
+      const a = sectorAngle(d) * Math.PI / 180;
+      return cx + CLUSTER_R * Math.cos(a);
+    }).strength(d => d.layer === 'hub' ? 0 : 0.12))
+    .force('sectorY', d3.forceY(d => {
+      if (d.layer === 'hub') return cy;
+      const a = sectorAngle(d) * Math.PI / 180;
+      return cy + CLUSTER_R * Math.sin(a);
+    }).strength(d => d.layer === 'hub' ? 0 : 0.12))
+    .force('collision', d3.forceCollide().radius(d => nodeR(d) + 10))
     .on('tick', () => {
       linkSponsor
         .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
