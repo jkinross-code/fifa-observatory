@@ -1471,6 +1471,7 @@
         <button id="net-filter-ownership" onclick="setNetFilter('ownership')" style="padding:4px 12px;border-radius:20px;border:1px solid #ef4444;background:transparent;color:#ef4444;font-size:11px;cursor:pointer">Ownership</button>
         <button id="net-filter-amplification" onclick="setNetFilter('amplification')" style="padding:4px 12px;border-radius:20px;border:1px solid #3b82f6;background:transparent;color:#3b82f6;font-size:11px;cursor:pointer">Amplification</button>
         <button id="net-filter-kit" onclick="setNetFilter('kit')" style="padding:4px 12px;border-radius:20px;border:1px solid #10b981;background:transparent;color:#10b981;font-size:11px;cursor:pointer">Kit Deal</button>
+        <button id="net-filter-sponsor" onclick="setNetFilter('sponsor')" style="padding:4px 12px;border-radius:20px;border:1px solid #94a3b8;background:transparent;color:#64748b;font-size:11px;cursor:pointer">→ FIFA</button>
       </div>
     </div>
 
@@ -1514,6 +1515,7 @@
         <div>
           <div style="font-weight:600;color:var(--text);margin-bottom:4px">Edge colour = Relationship</div>
           <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <span><span style="display:inline-block;width:20px;height:2px;background:#94a3b8;border-top:1px dashed #94a3b8;margin-right:3px;vertical-align:middle"></span>Pays FIFA</span>
             <span><span style="display:inline-block;width:20px;height:3px;background:#f59e0b;margin-right:3px;vertical-align:middle"></span>Supply chain</span>
             <span><span style="display:inline-block;width:20px;height:3px;background:#ec4899;margin-right:3px;vertical-align:middle"></span>Data/platform</span>
             <span><span style="display:inline-block;width:20px;height:3px;background:#ef4444;margin-right:3px;vertical-align:middle"></span>Ownership</span>
@@ -5156,161 +5158,243 @@ function renderDataGaps() {
 
 // ===== SPONSOR NETWORK — MULTI-YEAR WITH LAYERS =====
 
-// Per-tournament edge definitions. 'layer' field: 'sponsor'|'kit'|'local'
-// type: 'supply'|'data'|'ownership'|'amplification'|'kit'
+// FIFA is the central hub node present at all tournaments.
+// All official sponsors connect TO FIFA (they pay for access).
+// Additional edges capture inter-company commercial relationships.
+// Edge types:
+//   'sponsor'       — commercial sponsorship payment to FIFA (every sponsor)
+//   'supply'        — one company supplies goods/services to another
+//   'ownership'     — parent-subsidiary or state-asset relationship
+//   'data'          — data, technology or platform dependency
+//   'amplification' — one company amplifies another's marketing reach
+//   'kit'           — kit manufacturer connects to FIFA / rival brands
+
 const ALL_NET_EDGES = {
   '2026': [
-    // Supply chain
-    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
-    {source:"Coca-Cola", target:'Frito-Lay', type:'supply', label:'Co-branded snack deals'},
-    {source:"AB InBev", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
-    {source:"Mengniu Dairy", target:"McDonald's", type:'supply', label:'Dairy supplier (China)'},
-    {source:'DoorDash', target:"McDonald's", type:'supply', label:'Delivery partner'},
-    {source:'DoorDash', target:'Frito-Lay', type:'supply', label:'Delivery partner'},
-    {source:'Pepsi', target:'Frito-Lay', type:'ownership', label:'PepsiCo subsidiary'},
-    // Data / gambling
-    {source:'ADI Predictstreet', target:'Betano', type:'data', label:'Betting data feed'},
-    {source:'ADI Predictstreet', target:'Kraken', type:'data', label:'Real-time odds/data'},
-    // Device → platform
-    {source:'Vivo', target:'TikTok', type:'data', label:'Device + platform integration'},
-    {source:'Lenovo', target:'TikTok', type:'data', label:'Device + platform integration'},
-    {source:'Hisense', target:'TikTok', type:'data', label:'Smart TV integration'},
-    // Ownership
-    {source:'Qatar Airways', target:'Aramco', type:'ownership', label:'State asset (Qatar/Saudi)'},
-    // Amplification
-    {source:'TikTok', target:'Betano', type:'amplification', label:'Gambling ad platform'},
-    {source:'TikTok', target:'AB InBev', type:'amplification', label:'Alcohol ad platform'},
-    {source:"TikTok", target:"McDonald's", type:'amplification', label:'HFSS ad platform'},
-    {source:'TikTok', target:'Coca-Cola', type:'amplification', label:'HFSS ad platform'},
-    // Kit deals (kit manufacturers → FIFA sponsors they compete with / collaborate with)
-    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner'},
-    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands, both at WC'},
-    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands, both at WC'},
-    // Local sponsors
-    {source:'The Home Depot', target:'American Airlines', type:'supply', label:'US retail-travel bundle'},
-    {source:'Visit Las Vegas', target:'Airbnb', type:'supply', label:'Host city accommodation'},
-    {source:'Cox Enterprises', target:'TikTok', type:'amplification', label:'Broadcast + social cross-sell'},
+    // ── Every sponsor → FIFA (the core relationship) ──
+    {source:'Adidas',           target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner — official ball & apparel'},
+    {source:'Coca-Cola',        target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Visa',             target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner — official payment'},
+    {source:'Hyundai-Kia',      target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner — official vehicle'},
+    {source:'Qatar Airways',    target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner — official airline'},
+    {source:'Lenovo',           target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner — official tech'},
+    {source:'Aramco',           target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner — ~$100M'},
+    {source:'ADI Predictstreet',target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner — betting data ~$150M'},
+    {source:'AB InBev',         target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:"McDonald's",       target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Frito-Lay',        target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Unilever',         target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Hisense',          target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Mengniu Dairy',    target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Vivo',             target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'TikTok',           target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Betano',           target:'FIFA', type:'sponsor', label:'Tier 3 Regional Sponsor — gambling'},
+    {source:'Diageo',           target:'FIFA', type:'sponsor', label:'Tier 3 Regional Sponsor — alcohol'},
+    {source:'Airbnb',           target:'FIFA', type:'sponsor', label:'Tier 3 Regional Sponsor — official accommodation'},
+    {source:'American Airlines',target:'FIFA', type:'sponsor', label:'Tier 3 Regional Sponsor — official airline (Americas)'},
+    {source:'DoorDash',         target:'FIFA', type:'sponsor', label:'Tier 3 Regional Sponsor'},
+    {source:'Kraken',           target:'FIFA', type:'sponsor', label:'Tier 3 Regional Sponsor — crypto'},
+    // ── Kit manufacturers → FIFA ──
+    {source:'Nike',  target:'FIFA', type:'kit', label:'Kit supplier — no official FIFA deal but dominant team presence'},
+    {source:'Puma',  target:'FIFA', type:'kit', label:'Kit supplier — rival sportswear at WC'},
+    // ── Supply chain ──
+    {source:'Coca-Cola',      target:"McDonald's",  type:'supply', label:'Exclusive beverage supplier'},
+    {source:'AB InBev',       target:"McDonald's",  type:'supply', label:'Beer/alcohol in stadium concessions'},
+    {source:'Mengniu Dairy',  target:"McDonald's",  type:'supply', label:'Dairy supplier (China market)'},
+    {source:'Frito-Lay',      target:"McDonald's",  type:'supply', label:'Snack cross-promotion'},
+    {source:'DoorDash',       target:"McDonald's",  type:'supply', label:'Official delivery partner'},
+    {source:'DoorDash',       target:'Frito-Lay',   type:'supply', label:'Snack delivery partner'},
+    {source:'Diageo',         target:'AB InBev',    type:'supply', label:'Competing & co-distributing premium spirits'},
+    {source:'Unilever',       target:"McDonald's",  type:'supply', label:'Condiments & food ingredients'},
+    // ── Ownership ──
+    {source:'Frito-Lay',      target:'Pepsi',       type:'ownership', label:'PepsiCo subsidiary — same parent'},
+    {source:'Qatar Airways',  target:'Aramco',      type:'ownership', label:'State-aligned assets: Qatar + Saudi Arabia sovereigns'},
+    // ── Data / platform ──
+    {source:'ADI Predictstreet', target:'Betano',  type:'data', label:'Official betting data feed — enables in-play wagering'},
+    {source:'ADI Predictstreet', target:'Kraken',  type:'data', label:'Real-time odds & crypto market data'},
+    {source:'Lenovo',   target:'TikTok',  type:'data', label:'Device ecosystem — TikTok pre-installed'},
+    {source:'Vivo',     target:'TikTok',  type:'data', label:'Device ecosystem — TikTok pre-installed'},
+    {source:'Hisense',  target:'TikTok',  type:'data', label:'Smart TV integration'},
+    // ── Amplification ──
+    {source:'TikTok',  target:'Betano',       type:'amplification', label:'Gambling ad platform'},
+    {source:'TikTok',  target:'AB InBev',     type:'amplification', label:'Alcohol ad platform'},
+    {source:'TikTok',  target:"McDonald's",   type:'amplification', label:'HFSS advertising platform'},
+    {source:'TikTok',  target:'Coca-Cola',    type:'amplification', label:'HFSS advertising platform'},
+    {source:'TikTok',  target:'Frito-Lay',    type:'amplification', label:'HFSS advertising platform'},
+    {source:'Visa',    target:'Airbnb',       type:'amplification', label:'Official payment + official accommodation — joint fan activation'},
+    {source:'Visa',    target:'American Airlines', type:'amplification', label:'Travel payment partnership'},
+    {source:'Hyundai-Kia', target:'American Airlines', type:'amplification', label:'Mobility partnership — ground + air travel'},
+    {source:'Aramco',  target:'Qatar Airways', type:'amplification', label:'Petrostate aviation fuel supply'},
   ],
   '2022': [
-    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
-    {source:"Budweiser", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
-    {source:"AB InBev", target:"Budweiser", type:'ownership', label:'AB InBev owns Budweiser'},
-    {source:'Qatar Airways', target:'QatarEnergy', type:'ownership', label:'State assets — same sovereign'},
-    {source:'Wanda Group', target:'QatarEnergy', type:'data', label:'Chinese capital + Gulf petrostate alignment'},
-    {source:'Vivo', target:'Hisense', type:'data', label:'Chinese tech bloc — shared supply chains'},
-    {source:'Vivo', target:'Mengniu Dairy', type:'ownership', label:'Both under Chinese state-aligned capital'},
-    {source:'Crypto.com', target:'Visa', type:'amplification', label:'Crypto-fiat payment competition'},
-    {source:'Betano', target:'Crypto.com', type:'data', label:'Crypto + gambling — overlapping user base'},
-    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner'},
-    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
-    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
+    // Every sponsor → FIFA
+    {source:'Adidas',       target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner — official ball & apparel'},
+    {source:'Coca-Cola',    target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Visa',         target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Hyundai-Kia',  target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Qatar Airways',target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Wanda Group',  target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner — ~$150M'},
+    {source:'Hisense',      target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Mengniu Dairy',target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Vivo',         target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'AB InBev',     target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:"McDonald's",   target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Betano',       target:'FIFA', type:'sponsor', label:'Tier 3 — first global betting sponsor'},
+    // Kit
+    {source:'Nike',  target:'FIFA', type:'kit', label:'Kit supplier'},
+    {source:'Puma',  target:'FIFA', type:'kit', label:'Kit supplier'},
+    // Supply
+    {source:'Coca-Cola',    target:"McDonald's",  type:'supply', label:'Exclusive beverage supplier'},
+    {source:'Budweiser',    target:"McDonald's",  type:'supply', label:'Alcohol in concessions'},
+    {source:'AB InBev',     target:'Budweiser',   type:'ownership', label:'AB InBev owns Budweiser brand'},
+    {source:'Vivo',         target:'Hisense',     type:'data', label:'Chinese electronics bloc — shared components'},
+    {source:'Vivo',         target:'Mengniu Dairy',type:'ownership', label:'State-aligned Chinese capital'},
+    {source:'Wanda Group',  target:'QatarEnergy', type:'data', label:'Chinese capital + Gulf petrostate strategic alignment'},
+    {source:'Qatar Airways',target:'QatarEnergy', type:'ownership', label:'Qatar sovereign state assets'},
+    {source:'Betano',       target:'Crypto.com',  type:'data', label:'Gambling + crypto overlapping user base'},
+    {source:'Crypto.com',   target:'Visa',        type:'amplification', label:'Crypto-fiat payment rivalry & co-activation'},
+    {source:'QatarEnergy',  target:'FIFA', type:'sponsor', label:'Host-nation fossil fuel sponsor'},
+    {source:'Crypto.com',   target:'FIFA', type:'sponsor', label:'Cryptocurrency sponsor'},
+    {source:'Budweiser',    target:'FIFA', type:'sponsor', label:'Alcohol sponsor (Budweiser/AB InBev)'},
   ],
   '2018': [
-    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
-    {source:"Budweiser", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
-    {source:'AB InBev', target:'Budweiser', type:'ownership', label:'AB InBev owns Budweiser'},
-    {source:'Gazprom', target:'Lukoil', type:'ownership', label:'Russian state energy — same sovereign'},
-    {source:'Gazprom', target:'Visa', type:'supply', label:'Gazprom payment infrastructure partner'},
-    {source:'Wanda Group', target:'Alibaba', type:'ownership', label:'Chinese conglomerate bloc'},
-    {source:'Alibaba', target:'Vivo', type:'data', label:'Chinese tech ecosystem'},
-    {source:'Hisense', target:'Vivo', type:'data', label:'Chinese consumer electronics bloc'},
-    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner'},
-    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
-    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
-    {source:"McDonald's", target:'Coca-Cola', type:'supply', label:'Beverage deal — mutual amplification'},
-    {source:'Hyundai-Kia', target:'Vivo', type:'data', label:'Mobility + device integration'},
+    {source:'Adidas',       target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Coca-Cola',    target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Visa',         target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Hyundai-Kia',  target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Wanda Group',  target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Hisense',      target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Vivo',         target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'AB InBev',     target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:"McDonald's",   target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Gazprom',      target:'FIFA', type:'sponsor', label:'Tier 2 — Russian state energy'},
+    {source:'Budweiser',    target:'FIFA', type:'sponsor', label:'Alcohol sponsor'},
+    {source:'Alibaba',      target:'FIFA', type:'sponsor', label:'Tier 2 sponsor'},
+    {source:'Nike',  target:'FIFA', type:'kit', label:'Kit supplier'},
+    {source:'Puma',  target:'FIFA', type:'kit', label:'Kit supplier'},
+    {source:'Coca-Cola',    target:"McDonald's", type:'supply', label:'Beverage supplier'},
+    {source:'Budweiser',    target:"McDonald's", type:'supply', label:'Alcohol in concessions'},
+    {source:'AB InBev',     target:'Budweiser',  type:'ownership', label:'AB InBev owns Budweiser'},
+    {source:'Gazprom',      target:'Lukoil',     type:'ownership', label:'Russian state energy bloc'},
+    {source:'Wanda Group',  target:'Alibaba',    type:'ownership', label:'Chinese conglomerate bloc'},
+    {source:'Alibaba',      target:'Vivo',       type:'data', label:'Chinese tech ecosystem'},
+    {source:'Hisense',      target:'Vivo',       type:'data', label:'Consumer electronics bloc'},
+    {source:'Hyundai-Kia',  target:'Vivo',       type:'data', label:'Connected vehicle + device integration'},
+    {source:'Lukoil',       target:'FIFA', type:'sponsor', label:'Host-nation fuel sponsor'},
   ],
   '2014': [
-    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
-    {source:"Budweiser", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
-    {source:'AB InBev', target:'Budweiser', type:'ownership', label:'AB InBev owns Budweiser'},
-    {source:'Johnson & Johnson', target:'Visa', type:'amplification', label:'Consumer brand co-marketing'},
-    {source:'Castrol', target:'Hyundai-Kia', type:'supply', label:'Lubricant supplier to automotive'},
-    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner'},
-    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
-    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
-    {source:'Oi Telecom', target:'Coca-Cola', type:'amplification', label:'Brazilian host-sponsor amplification'},
-    {source:"McDonald's", target:'Coca-Cola', type:'supply', label:'Beverage deal'},
-    {source:'APEX', target:'Adidas', type:'supply', label:'Brazil host agency — retail'},
+    {source:'Adidas',       target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner — host-nation brand'},
+    {source:'Coca-Cola',    target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Visa',         target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Hyundai-Kia',  target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'AB InBev',     target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:"McDonald's",   target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Budweiser',    target:'FIFA', type:'sponsor', label:'Alcohol sponsor'},
+    {source:'Castrol',      target:'FIFA', type:'sponsor', label:'Tier 2 Sponsor — lubricants'},
+    {source:'Johnson & Johnson', target:'FIFA', type:'sponsor', label:'Tier 2 Sponsor'},
+    {source:'Oi Telecom',   target:'FIFA', type:'sponsor', label:'Local Brazilian sponsor'},
+    {source:'Nike',  target:'FIFA', type:'kit', label:'Kit supplier'},
+    {source:'Puma',  target:'FIFA', type:'kit', label:'Kit supplier'},
+    {source:'Coca-Cola',    target:"McDonald's", type:'supply', label:'Beverage supplier'},
+    {source:'Budweiser',    target:"McDonald's", type:'supply', label:'Alcohol in concessions'},
+    {source:'AB InBev',     target:'Budweiser',  type:'ownership', label:'AB InBev owns Budweiser'},
+    {source:'Castrol',      target:'Hyundai-Kia',type:'supply', label:'Official lubricant supplier'},
+    {source:'Johnson & Johnson', target:'Visa',  type:'amplification', label:'Consumer brand joint activation'},
+    {source:'Oi Telecom',   target:'Coca-Cola',  type:'amplification', label:'Host-market co-promotion'},
   ],
   '2010': [
-    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
-    {source:"Budweiser", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
-    {source:'AB InBev', target:'Budweiser', type:'ownership', label:'AB InBev owns Budweiser'},
-    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner'},
-    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
-    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
-    {source:'MTN', target:'Coca-Cola', type:'amplification', label:'African host-market co-activation'},
-    {source:'Vodacom', target:'MTN', type:'amplification', label:'SA telecom rivals, both WC sponsors'},
-    {source:"McDonald's", target:'Coca-Cola', type:'supply', label:'Beverage deal'},
-    {source:'First National Bank', target:'Vodacom', type:'amplification', label:'SA host sponsors — joint fan activations'},
-    {source:'Adidas', target:'Puma', type:'kit', label:'Rival German sportswear brands'},
+    {source:'Adidas',       target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Coca-Cola',    target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Visa',         target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Hyundai-Kia',  target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'AB InBev',     target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:"McDonald's",   target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Budweiser',    target:'FIFA', type:'sponsor', label:'Alcohol sponsor'},
+    {source:'MTN',          target:'FIFA', type:'sponsor', label:'Local South African sponsor'},
+    {source:'Vodacom',      target:'FIFA', type:'sponsor', label:'Local South African sponsor'},
+    {source:'First National Bank', target:'FIFA', type:'sponsor', label:'Local financial sponsor'},
+    {source:'Nike',  target:'FIFA', type:'kit', label:'Kit supplier'},
+    {source:'Puma',  target:'FIFA', type:'kit', label:'Kit supplier'},
+    {source:'Coca-Cola',    target:"McDonald's", type:'supply', label:'Beverage supplier'},
+    {source:'Budweiser',    target:"McDonald's", type:'supply', label:'Alcohol in concessions'},
+    {source:'AB InBev',     target:'Budweiser',  type:'ownership', label:'AB InBev owns Budweiser'},
+    {source:'MTN',          target:'Coca-Cola',  type:'amplification', label:'African host co-activation'},
+    {source:'Vodacom',      target:'MTN',        type:'amplification', label:'SA telecom rivals — joint fan activations'},
+    {source:'First National Bank', target:'Vodacom', type:'amplification', label:'SA host sponsors — joint activations'},
   ],
   '2006': [
-    {source:"Coca-Cola", target:"McDonald's", type:'supply', label:'Beverage supplier'},
-    {source:"Budweiser", target:"McDonald's", type:'supply', label:'Alcohol in stadiums'},
-    {source:'AB InBev', target:'Budweiser', type:'ownership', label:'AB InBev owns Budweiser'},
-    {source:'Adidas', target:'FIFA', type:'kit', label:'Official ball & kit partner + home host brand'},
-    {source:'Nike', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
-    {source:'Puma', target:'Adidas', type:'kit', label:'Rival kit brands at WC'},
-    {source:'ODDSET', target:'Toto', type:'ownership', label:'German state gambling monopoly entities'},
-    {source:'Deutsche Telekom', target:'Adidas', type:'amplification', label:'German host brand co-marketing'},
-    {source:'EnBW', target:'Deutsche Telekom', type:'amplification', label:'German utility + telco — joint host activation'},
-    {source:"McDonald's", target:'Coca-Cola', type:'supply', label:'Beverage deal'},
-    {source:'DFB', target:'Adidas', type:'kit', label:'German FA kit deal — home advantage'},
+    {source:'Adidas',       target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner — home nation brand'},
+    {source:'Coca-Cola',    target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Visa',         target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'Hyundai-Kia',  target:'FIFA', type:'sponsor', label:'Tier 1 FIFA Partner'},
+    {source:'AB InBev',     target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:"McDonald's",   target:'FIFA', type:'sponsor', label:'Tier 2 World Cup Sponsor'},
+    {source:'Budweiser',    target:'FIFA', type:'sponsor', label:'Alcohol sponsor'},
+    {source:'Deutsche Telekom', target:'FIFA', type:'sponsor', label:'Local German sponsor'},
+    {source:'EnBW',         target:'FIFA', type:'sponsor', label:'Local German energy sponsor'},
+    {source:'ODDSET',       target:'FIFA', type:'sponsor', label:'German state lottery — gambling'},
+    {source:'Nike',  target:'FIFA', type:'kit', label:'Kit supplier'},
+    {source:'Puma',  target:'FIFA', type:'kit', label:'Kit supplier'},
+    {source:'Coca-Cola',    target:"McDonald's",     type:'supply', label:'Beverage supplier'},
+    {source:'Budweiser',    target:"McDonald's",     type:'supply', label:'Alcohol in concessions'},
+    {source:'AB InBev',     target:'Budweiser',      type:'ownership', label:'AB InBev owns Budweiser'},
+    {source:'ODDSET',       target:'Toto',           type:'ownership', label:'German state gambling monopoly'},
+    {source:'EnBW',         target:'Deutsche Telekom', type:'amplification', label:'German utility + telco joint activation'},
+    {source:'Deutsche Telekom', target:'Adidas',     type:'amplification', label:'German host brand co-marketing'},
+    {source:'DFB',          target:'Adidas',         type:'kit', label:'German FA kit deal — home advantage'},
+    {source:'DFB',          target:'FIFA', type:'sponsor', label:'Host football association'},
+    {source:'Toto',         target:'FIFA', type:'sponsor', label:'German state lottery'},
   ],
 };
 
-// Kit manufacturer nodes — present at all tournaments
-// These are NOT official FIFA sponsors but form a parallel commercial layer
+// Kit manufacturer nodes — NOT official FIFA sponsors; parallel commercial layer
+// Adidas is both a FIFA Partner AND a kit brand — handled in render:
+// when kit layer active, sponsor-layer Adidas is suppressed to avoid duplication
 const KIT_BRANDS = {
-  'Adidas': {name:'Adidas', layer:'kit', industry:'Sportswear (Kit)', country:'DE', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:30, website:'https://www.adidas.com'},
-  'Nike':   {name:'Nike',   layer:'kit', industry:'Sportswear (Kit)', country:'US', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:20, website:'https://www.nike.com'},
-  'Puma':   {name:'Puma',   layer:'kit', industry:'Sportswear (Kit)', country:'DE', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:12, website:'https://www.puma.com'},
+  'Nike': {name:'Nike', layer:'kit', industry:'Sportswear (Kit)', country:'US', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:20, website:'https://www.nike.com'},
+  'Puma': {name:'Puma', layer:'kit', industry:'Sportswear (Kit)', country:'DE', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:12, website:'https://www.puma.com'},
 };
+// Note: Adidas is a Tier 1 FIFA Partner (in DATA.companies) AND kit supplier.
+// We render it from the sponsor layer only — its kit relationships are captured via edges.
 
-// Local/host-nation sponsors per tournament — companies active in host country activations
-// but not official FIFA Tier 1/2 global sponsors
+// Local/host-nation sponsors per tournament
 const LOCAL_SPONSORS = {
-  '2026': [
-    {name:'FIFA', layer:'local', industry:'Governing Body', country:'CH', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:0},
-  ],
+  '2026': [],
   '2022': [
     {name:'QatarEnergy', layer:'local', industry:'Fossil Fuel', country:'QA', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:20},
-    {name:'Crypto.com', layer:'local', industry:'Cryptocurrency', country:'SG', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:10},
-    {name:'Budweiser', layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
+    {name:'Crypto.com',  layer:'local', industry:'Cryptocurrency', country:'SG', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:10},
+    {name:'Budweiser',   layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
   ],
   '2018': [
-    {name:'Gazprom', layer:'local', industry:'Fossil Fuel (Russian state)', country:'RU', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:25},
-    {name:'Lukoil', layer:'local', industry:'Fossil Fuel', country:'RU', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:8},
-    {name:'Alibaba', layer:'local', industry:'Technology / Retail', country:'CN', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:15},
-    {name:'Budweiser', layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
+    {name:'Gazprom',  layer:'local', industry:'Fossil Fuel (Russian state)', country:'RU', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:25},
+    {name:'Lukoil',   layer:'local', industry:'Fossil Fuel', country:'RU', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:8},
+    {name:'Alibaba',  layer:'local', industry:'Technology / Retail', country:'CN', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:15},
+    {name:'Budweiser',layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
   ],
   '2014': [
-    {name:'Oi Telecom', layer:'local', industry:'Telecommunications', country:'BR', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:10},
-    {name:'Apex-Brasil', layer:'local', industry:'Government / Trade Promotion', country:'BR', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:5},
-    {name:'APEX', layer:'local', industry:'Retail / Agency', country:'BR', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:3},
-    {name:'Budweiser', layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
-    {name:'Johnson & Johnson', layer:'local', industry:'Healthcare / FMCG', country:'US', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:8},
-    {name:'Castrol', layer:'local', industry:'Fossil Fuel (Lubricants)', country:'GB', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:8},
+    {name:'Oi Telecom',       layer:'local', industry:'Telecommunications', country:'BR', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:10},
+    {name:'Budweiser',        layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
+    {name:'Johnson & Johnson',layer:'local', industry:'Healthcare / FMCG', country:'US', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:8},
+    {name:'Castrol',          layer:'local', industry:'Fossil Fuel (Lubricants)', country:'GB', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:8},
   ],
   '2010': [
-    {name:'MTN', layer:'local', industry:'Telecommunications', country:'ZA', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:12},
-    {name:'Vodacom', layer:'local', industry:'Telecommunications', country:'ZA', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:10},
-    {name:'First National Bank', layer:'local', industry:'Financial Services', country:'ZA', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:8},
-    {name:'Budweiser', layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
+    {name:'MTN',               layer:'local', industry:'Telecommunications', country:'ZA', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:12},
+    {name:'Vodacom',           layer:'local', industry:'Telecommunications', country:'ZA', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:10},
+    {name:'First National Bank',layer:'local', industry:'Financial Services', country:'ZA', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:8},
+    {name:'Budweiser',         layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
   ],
   '2006': [
-    {name:'Deutsche Telekom', layer:'local', industry:'Telecommunications', country:'DE', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:15},
-    {name:'EnBW', layer:'local', industry:'Energy / Fossil Fuel', country:'DE', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:8},
-    {name:'ODDSET', layer:'local', industry:'Gambling (State Lottery)', country:'DE', hfss:0, alc:0, fossil:0, gamble:1, tech:0, fee:5},
-    {name:'Toto', layer:'local', industry:'Gambling (State Lottery)', country:'DE', hfss:0, alc:0, fossil:0, gamble:1, tech:0, fee:3},
-    {name:'DFB', layer:'local', industry:'Football Association', country:'DE', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:0},
-    {name:'Budweiser', layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
+    {name:'Deutsche Telekom',layer:'local', industry:'Telecommunications', country:'DE', hfss:0, alc:0, fossil:0, gamble:0, tech:1, fee:15},
+    {name:'EnBW',            layer:'local', industry:'Energy / Fossil Fuel', country:'DE', hfss:0, alc:0, fossil:1, gamble:0, tech:0, fee:8},
+    {name:'ODDSET',          layer:'local', industry:'Gambling (State Lottery)', country:'DE', hfss:0, alc:0, fossil:0, gamble:1, tech:0, fee:5},
+    {name:'Toto',            layer:'local', industry:'Gambling (State Lottery)', country:'DE', hfss:0, alc:0, fossil:0, gamble:1, tech:0, fee:3},
+    {name:'DFB',             layer:'local', industry:'Football Association', country:'DE', hfss:0, alc:0, fossil:0, gamble:0, tech:0, fee:0},
+    {name:'Budweiser',       layer:'local', industry:'Alcohol', country:'BE', hfss:0, alc:1, fossil:0, gamble:0, tech:0, fee:15},
   ],
 };
 
 const EDGE_COLORS = {
+  sponsor:       'rgba(148,163,184,0.45)',  // grey spokes: every sponsor → FIFA
   supply:        'rgba(245,158,11,0.7)',
   data:          'rgba(236,72,153,0.7)',
   ownership:     'rgba(239,68,68,0.7)',
@@ -5319,6 +5403,7 @@ const EDGE_COLORS = {
 };
 
 function nodeColor(c) {
+  if (c.layer === 'hub')   return '#1e40af';  // FIFA — deep blue
   if (c.layer === 'kit')   return '#a78bfa';
   if (c.layer === 'local') {
     if (c.gamble) return '#ec4899';
@@ -5385,19 +5470,22 @@ function applyNetFilters() {
 
   const svg = d3.select('#sponsor-network-svg');
   svg.selectAll('.net-node').style('opacity', d => {
-    if (d.layer === 'kit'   && !showKits)     return 0.05;
-    if (d.layer === 'local' && !showLocal)    return 0.05;
+    if (d.layer === 'hub')    return 1;  // FIFA always visible
+    if (d.layer === 'kit'     && !showKits)     return 0.05;
+    if (d.layer === 'local'   && !showLocal)    return 0.05;
     if (d.layer === 'sponsor' && !showSponsors) return 0.05;
     return 1;
   });
   svg.selectAll('.net-label').style('opacity', d => {
-    if (d.layer === 'kit'   && !showKits)     return 0;
-    if (d.layer === 'local' && !showLocal)    return 0;
+    if (d.layer === 'hub')    return 1;
+    if (d.layer === 'kit'     && !showKits)     return 0;
+    if (d.layer === 'local'   && !showLocal)    return 0;
     if (d.layer === 'sponsor' && !showSponsors) return 0;
     return 1;
   });
   svg.selectAll('.net-edge').style('opacity', d => {
     if (_netFilter !== 'all' && d.type !== _netFilter) return 0.03;
+    if (d.type === 'sponsor') return 0.4;  // sponsor spokes always subtle
     if (d.type === 'kit' && !showKits) return 0.03;
     return 0.75;
   });
@@ -5413,22 +5501,39 @@ function renderSponsorNetwork() {
 
   const yr = _netYear;
   const tournamentKey = 'FIFA World Cup ' + yr;
+  const W = svgEl.clientWidth || 900;
+  const H = 600;
+  const cx = W / 2, cy = H / 2;
 
-  // Build node list
+  // ── FIFA central node (always present, pinned at centre) ──
+  const fifaNode = {
+    name: 'FIFA', id: 'FIFA', layer: 'hub',
+    industry: 'Governing Body', country: 'CH',
+    fee: 0, hfss: 0, alc: 0, fossil: 0, gamble: 0, tech: 0,
+    fx: cx, fy: cy,  // pinned — immune to simulation forces
+  };
+
+  // ── Official sponsor nodes ──
   const sponsorNodes = DATA.companies
     .filter(c => c.tournament === tournamentKey)
     .map(c => ({...c, id: c.name, layer: 'sponsor'}));
 
+  // Names of sponsors — used to suppress kit-brand duplicates
+  const sponsorNames = new Set(sponsorNodes.map(n => n.name));
+
   const showKits  = document.getElementById('net-layer-kits')  ? document.getElementById('net-layer-kits').checked  : true;
   const showLocal = document.getElementById('net-layer-local') ? document.getElementById('net-layer-local').checked : true;
 
-  // Kit brands present in KIT_DATA for this year
+  // Kit brands: exclude any brand that already appears as an official sponsor (e.g. Adidas 2026)
   const kitsThisYear = new Set((KIT_DATA || []).filter(k => k.tournament === yr).map(k => k.brand));
-  const kitNodes = Object.values(KIT_BRANDS).filter(k => kitsThisYear.has(k.name));
+  const kitNodes = Object.values(KIT_BRANDS)
+    .filter(k => kitsThisYear.has(k.name) && !sponsorNames.has(k.name));
 
-  const localNodes = (LOCAL_SPONSORS[yr] || []);
+  // Local/host nodes: exclude FIFA (now handled by fifaNode)
+  const localNodes = (LOCAL_SPONSORS[yr] || []).filter(n => n.name !== 'FIFA');
 
   const allNodes = [
+    fifaNode,
     ...sponsorNodes,
     ...(showKits  ? kitNodes  : []),
     ...(showLocal ? localNodes : []),
@@ -5446,8 +5551,6 @@ function renderSponsorNetwork() {
   _netNodes = allNodes;
   _netLinks = links;
 
-  const W = svgEl.clientWidth || 900;
-  const H = 600;
   const svg = d3.select(svgEl).attr('viewBox', `0 0 ${W} ${H}`);
 
   // D3 zoom — attach to SVG, transform the inner group
@@ -5478,6 +5581,7 @@ function renderSponsorNetwork() {
   const rScale = d3.scaleSqrt().domain([feeMin, feeMax]).range([6, 26]);
 
   function nodeR(d) {
+    if (d.layer === 'hub')   return 32;  // FIFA — large central node
     if (d.layer === 'local') return Math.max(5, rScale(d.fee || 3));
     if (d.layer === 'kit')   return rScale(d.fee || 20);
     return rScale(d.fee || 5);
@@ -5486,8 +5590,20 @@ function renderSponsorNetwork() {
   // Single group that receives zoom transforms
   const zoomG = svg.append('g').attr('id', 'net-zoom-g');
 
+  // Sponsor edges drawn first (behind nodes)
+  const sponsorLinks = links.filter(l => l.type === 'sponsor');
+  const otherLinks   = links.filter(l => l.type !== 'sponsor');
+
+  const linkSponsor = zoomG.append('g').selectAll('line')
+    .data(sponsorLinks).enter().append('line')
+    .attr('class', 'net-edge')
+    .attr('stroke', EDGE_COLORS.sponsor)
+    .attr('stroke-width', 1)
+    .attr('stroke-dasharray', '4,3')
+    .style('opacity', 0.5);
+
   const link = zoomG.append('g').selectAll('line')
-    .data(links).enter().append('line')
+    .data(otherLinks).enter().append('line')
     .attr('class', 'net-edge')
     .attr('stroke', d => EDGE_COLORS[d.type] || 'rgba(100,116,139,0.5)')
     .attr('stroke-width', d => d.type === 'kit' ? 1.5 : 2)
@@ -5495,35 +5611,46 @@ function renderSponsorNetwork() {
     .attr('marker-end', d => `url(#arr-${yr}-${d.type})`)
     .style('opacity', 0.75);
 
-  // Node shapes — kit manufacturers get diamond (polygon), others circle
+  // Node shapes
   const nodeG = zoomG.append('g').selectAll('g')
     .data(allNodes).enter().append('g')
     .attr('class', 'net-node-g')
     .style('cursor', 'pointer')
     .call(d3.drag()
-      .on('start', (event, d) => { if (!event.active) _netSim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
-      .on('drag',  (event, d) => { d.fx=event.x; d.fy=event.y; })
-      .on('end',   (event, d) => { if (!event.active) _netSim.alphaTarget(0); d.fx=null; d.fy=null; }));
+      .on('start', (event, d) => { if (!event.active) _netSim.alphaTarget(0.3).restart(); if (d.layer !== 'hub') { d.fx=d.x; d.fy=d.y; } })
+      .on('drag',  (event, d) => { if (d.layer !== 'hub') { d.fx=event.x; d.fy=event.y; } })
+      .on('end',   (event, d) => { if (!event.active) _netSim.alphaTarget(0); if (d.layer !== 'hub') { d.fx=null; d.fy=null; } }));
+
+  // FIFA hub node — large circle with double ring
+  nodeG.filter(d => d.layer === 'hub').append('circle')
+    .attr('r', 38).attr('fill', 'none')
+    .attr('stroke', '#93c5fd').attr('stroke-width', 1).attr('stroke-dasharray', '4,3').attr('opacity', 0.6);
+  nodeG.filter(d => d.layer === 'hub').append('circle')
+    .attr('class', 'net-node')
+    .attr('r', 32).attr('fill', '#1e40af')
+    .attr('stroke', '#60a5fa').attr('stroke-width', 2.5);
+  nodeG.filter(d => d.layer === 'hub').append('text')
+    .attr('text-anchor', 'middle').attr('dy', '0.35em')
+    .attr('font-size', 13).attr('font-weight', 'bold').attr('fill', '#fff')
+    .style('pointer-events', 'none').text('FIFA');
 
   // Circles for sponsor & local nodes
-  nodeG.filter(d => d.layer !== 'kit').append('circle')
+  nodeG.filter(d => d.layer !== 'kit' && d.layer !== 'hub').append('circle')
     .attr('class', 'net-node')
     .attr('r', d => nodeR(d))
     .attr('fill', d => nodeColor(d))
     .attr('stroke', d => d.layer === 'local' ? '#34d399' : '#fff')
-    .attr('stroke-width', d => d.layer === 'local' ? 1.5 : 1.5)
+    .attr('stroke-width', 1.5)
     .attr('stroke-dasharray', d => d.layer === 'local' ? '3,2' : null);
 
   // Diamonds for kit manufacturer nodes
   nodeG.filter(d => d.layer === 'kit').append('polygon')
     .attr('class', 'net-node')
     .attr('points', d => { const r = nodeR(d); return `0,${-r} ${r},0 0,${r} ${-r},0`; })
-    .attr('fill', '#a78bfa')
-    .attr('stroke', '#c4b5fd')
-    .attr('stroke-width', 1.5);
+    .attr('fill', '#a78bfa').attr('stroke', '#c4b5fd').attr('stroke-width', 1.5);
 
   const labelG = zoomG.append('g').selectAll('text')
-    .data(allNodes).enter().append('text')
+    .data(allNodes.filter(d => d.layer !== 'hub')).enter().append('text')
     .attr('class', 'net-label')
     .attr('font-size', d => d.layer === 'local' ? 9 : 10)
     .attr('fill', d => d.layer === 'kit' ? '#7c3aed' : d.layer === 'local' ? '#059669' : '#1e293b')
@@ -5535,21 +5662,36 @@ function renderSponsorNetwork() {
   // Tooltip
   const tooltip = document.getElementById('network-tooltip');
   nodeG.on('mouseover', (event, d) => {
-    const csh = (d.layer === 'sponsor' && typeof computeCSH === 'function') ? computeCSH(d).toFixed(1) : '—';
-    const layerLabel = d.layer === 'kit' ? 'Kit Manufacturer' : d.layer === 'local' ? 'Local/Host Sponsor' : d.tier || 'FIFA Sponsor';
-    tooltip.innerHTML = `<strong>${d.name}</strong><br><em>${d.industry}</em><br>${layerLabel}<br>Est. fee: ~$${d.fee||'?'}M${d.layer==='sponsor'?`<br>CSH Score: ${csh}`:''}`;
+    if (d.layer === 'hub') {
+      const totalFee = sponsorNodes.reduce((s, c) => s + (c.fee || 0), 0);
+      tooltip.innerHTML = `<strong>FIFA</strong><br><em>Governing Body</em><br>Central commercial hub<br>Est. total sponsorship revenue: ~$${totalFee}M`;
+    } else {
+      const csh = (d.layer === 'sponsor' && typeof computeCSH === 'function') ? computeCSH(d).toFixed(1) : '—';
+      const layerLabel = d.layer === 'kit' ? 'Kit Manufacturer' : d.layer === 'local' ? 'Local/Host Sponsor' : d.tier || 'FIFA Sponsor';
+      tooltip.innerHTML = `<strong>${d.name}</strong><br><em>${d.industry}</em><br>${layerLabel}<br>Est. fee: ~$${d.fee||'?'}M${d.layer==='sponsor'?`<br>CSH Score: ${csh}`:''}`;
+    }
     tooltip.style.display = 'block';
   }).on('mousemove', event => {
     tooltip.style.left = (event.clientX + 14) + 'px';
     tooltip.style.top  = (event.clientY - 10) + 'px';
   }).on('mouseout', () => { tooltip.style.display = 'none'; });
 
+  // Tighter simulation: shorter link distances, weaker repulsion, radial pull toward FIFA
   _netSim = d3.forceSimulation(allNodes)
-    .force('link', d3.forceLink(links).id(d => d.name).distance(d => d.type === 'kit' ? 150 : 110))
-    .force('charge', d3.forceManyBody().strength(-350))
-    .force('center', d3.forceCenter(W/2, H/2))
-    .force('collision', d3.forceCollide().radius(d => nodeR(d) + 8))
+    .force('link', d3.forceLink(links).id(d => d.name)
+      .distance(d => {
+        if (d.type === 'sponsor') return 160;  // spoke length from FIFA
+        if (d.type === 'kit')     return 100;
+        return 80;  // inter-sponsor links are short
+      })
+      .strength(d => d.type === 'sponsor' ? 0.8 : 0.4))
+    .force('charge', d3.forceManyBody().strength(d => d.layer === 'hub' ? 0 : -120))
+    .force('center', d3.forceCenter(cx, cy).strength(0.05))
+    .force('collision', d3.forceCollide().radius(d => nodeR(d) + 6))
     .on('tick', () => {
+      linkSponsor
+        .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
       link
         .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
