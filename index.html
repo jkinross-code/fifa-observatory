@@ -1485,6 +1485,12 @@
 
     <div class="card" style="padding:0;overflow:hidden;position:relative">
       <svg id="sponsor-network-svg" style="width:100%;height:600px;background:var(--bg2);display:block"></svg>
+      <!-- Zoom controls -->
+      <div style="position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:4px;z-index:10">
+        <button onclick="netZoom(1.3)" title="Zoom in" style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">+</button>
+        <button onclick="netZoom(0.77)" title="Zoom out" style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">−</button>
+        <button onclick="netZoomReset()" title="Reset zoom" style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">↺</button>
+      </div>
       <div id="network-tooltip" style="display:none;position:fixed;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text);pointer-events:none;z-index:9999;max-width:240px;line-height:1.6"></div>
     </div>
 
@@ -1524,6 +1530,17 @@
       <div class="view" id="view-geomap">
         <div class="section">
           <div class="section-title">Global Map — Sponsor Headquarters</div>
+          <!-- Year selector -->
+          <div class="card" style="margin-bottom:12px;padding:12px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <span style="font-size:12px;font-weight:600;color:var(--text2);margin-right:4px">Tournament:</span>
+            <button class="geo-yr-btn" onclick="setGeoYear('2026',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:12px;cursor:pointer">2026 USA/CAN/MEX</button>
+            <button class="geo-yr-btn" onclick="setGeoYear('2022',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">2022 Qatar</button>
+            <button class="geo-yr-btn" onclick="setGeoYear('2018',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">2018 Russia</button>
+            <button class="geo-yr-btn" onclick="setGeoYear('2014',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">2014 Brazil</button>
+            <button class="geo-yr-btn" onclick="setGeoYear('2010',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">2010 S.Africa</button>
+            <button class="geo-yr-btn" onclick="setGeoYear('2006',this)" style="padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer">2006 Germany</button>
+          </div>
+          <!-- Category filter -->
           <div class="card" style="margin-bottom:12px;padding:12px 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <span style="font-size:12px;color:var(--text2);margin-right:4px">Filter by category:</span>
             <button id="geo-filter-all" onclick="setGeoFilter('all')" style="padding:5px 14px;border-radius:20px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:12px;cursor:pointer">All</button>
@@ -5323,6 +5340,21 @@ let _netYear    = '2026';
 let _netSim     = null;
 let _netNodes   = [];
 let _netLinks   = [];
+let _netZoom    = null;
+let _netZoomBeh = null;
+
+function netZoom(factor) {
+  if (!_netZoom || !_netZoomBeh) return;
+  const svg = d3.select('#sponsor-network-svg');
+  svg.transition().duration(300).call(_netZoomBeh.scaleBy, factor);
+}
+function netZoomReset() {
+  if (!_netZoom || !_netZoomBeh) return;
+  const svgEl = document.getElementById('sponsor-network-svg');
+  const W = svgEl ? (svgEl.clientWidth || 900) : 900;
+  const svg = d3.select('#sponsor-network-svg');
+  svg.transition().duration(400).call(_netZoomBeh.transform, d3.zoomIdentity.translate(W/2, 300).scale(1));
+}
 
 function setNetYear(yr, btn) {
   _netYear = yr;
@@ -5418,6 +5450,14 @@ function renderSponsorNetwork() {
   const H = 600;
   const svg = d3.select(svgEl).attr('viewBox', `0 0 ${W} ${H}`);
 
+  // D3 zoom — attach to SVG, transform the inner group
+  _netZoomBeh = d3.zoom().scaleExtent([0.2, 4]).on('zoom', event => {
+    zoomG.attr('transform', event.transform);
+    _netZoom = event.transform;
+  });
+  svg.call(_netZoomBeh);
+  _netZoom = d3.zoomIdentity;
+
   // Arrow markers
   const defs = svg.append('defs');
   Object.keys(EDGE_COLORS).forEach(type => {
@@ -5443,7 +5483,10 @@ function renderSponsorNetwork() {
     return rScale(d.fee || 5);
   }
 
-  const link = svg.append('g').selectAll('line')
+  // Single group that receives zoom transforms
+  const zoomG = svg.append('g').attr('id', 'net-zoom-g');
+
+  const link = zoomG.append('g').selectAll('line')
     .data(links).enter().append('line')
     .attr('class', 'net-edge')
     .attr('stroke', d => EDGE_COLORS[d.type] || 'rgba(100,116,139,0.5)')
@@ -5453,7 +5496,7 @@ function renderSponsorNetwork() {
     .style('opacity', 0.75);
 
   // Node shapes — kit manufacturers get diamond (polygon), others circle
-  const nodeG = svg.append('g').selectAll('g')
+  const nodeG = zoomG.append('g').selectAll('g')
     .data(allNodes).enter().append('g')
     .attr('class', 'net-node-g')
     .style('cursor', 'pointer')
@@ -5479,7 +5522,7 @@ function renderSponsorNetwork() {
     .attr('stroke', '#c4b5fd')
     .attr('stroke-width', 1.5);
 
-  const labelG = svg.append('g').selectAll('text')
+  const labelG = zoomG.append('g').selectAll('text')
     .data(allNodes).enter().append('text')
     .attr('class', 'net-label')
     .attr('font-size', d => d.layer === 'local' ? 9 : 10)
@@ -5567,6 +5610,7 @@ const COMPANY_COORDS = {
 };
 
 let _geoFilter = 'all';
+let _geoYear   = '2026';
 let _geoMarkers = [];
 let _geoMap = null;
 
@@ -5579,6 +5623,17 @@ function geoMarkerColor(c) {
   return '#64748b';
 }
 
+function setGeoYear(yr, btn) {
+  _geoYear = yr;
+  document.querySelectorAll('.geo-yr-btn').forEach(b => {
+    b.style.background = 'transparent';
+    b.style.color = 'var(--text2)';
+    b.style.borderColor = 'var(--border)';
+  });
+  if (btn) { btn.style.background = 'var(--accent)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--accent)'; }
+  _geoRedrawMarkers();
+}
+
 function setGeoFilter(type) {
   _geoFilter = type;
   document.querySelectorAll('[id^="geo-filter-"]').forEach(b => {
@@ -5588,7 +5643,7 @@ function setGeoFilter(type) {
   const active = document.getElementById('geo-filter-' + type);
   if (active) { active.style.background = active.style.borderColor || 'var(--accent)'; active.style.color = '#fff'; }
   _geoMarkers.forEach(({marker, company}) => {
-    let show = type === 'all'
+    const show = type === 'all'
       || (type === 'hfss'   && company.hfss)
       || (type === 'alc'    && company.alc)
       || (type === 'fossil' && company.fossil)
@@ -5596,6 +5651,80 @@ function setGeoFilter(type) {
       || (type === 'tech'   && company.tech && !company.hfss && !company.alc && !company.fossil && !company.gamble);
     marker.setStyle({opacity: show ? 1 : 0.15, fillOpacity: show ? 0.8 : 0.1});
   });
+}
+
+function _geoRedrawMarkers() {
+  if (!_geoMap) return;
+  // Remove existing markers
+  _geoMarkers.forEach(({marker}) => marker.remove());
+  _geoMarkers = [];
+
+  const tournamentKey = 'FIFA World Cup ' + _geoYear;
+  const sponsors = DATA.companies.filter(c => c.tournament === tournamentKey);
+  const fees = sponsors.map(c => c.fee).filter(f => f > 0);
+  const feeMin = Math.min(...fees) || 1;
+  const feeMax = Math.max(...fees) || 150;
+  function rForFee(fee) { return 6 + (Math.sqrt(Math.max(fee,1)) - Math.sqrt(feeMin)) / (Math.sqrt(feeMax) - Math.sqrt(feeMin) || 1) * 14; }
+
+  sponsors.forEach(c => {
+    const coord = COMPANY_COORDS[c.name];
+    if (!coord) return;
+    const color = geoMarkerColor(c);
+    const csh = typeof computeCSH === 'function' ? computeCSH(c).toFixed(1) : 'N/A';
+    const harmFlags = [c.hfss?'HFSS':'', c.alc?'Alcohol':'', c.fossil?'Fossil Fuel':'', c.gamble?'Gambling':''].filter(Boolean).join(', ') || 'None';
+    const marker = L.circleMarker([coord.lat, coord.lng], {
+      radius: rForFee(c.fee),
+      fillColor: color,
+      color: '#fff',
+      weight: 1.5,
+      opacity: 1,
+      fillOpacity: 0.8
+    }).addTo(_geoMap);
+    marker.bindPopup(`<div style="font-size:13px;line-height:1.7;min-width:160px">
+      <strong>${c.name}</strong><br>
+      <span style="color:#555">${coord.city}</span><br>
+      ${c.tier}<br>
+      ${c.industry}<br>
+      Fee: ~$${c.fee}M<br>
+      Harm flags: ${harmFlags}<br>
+      CSH Score: ${csh}
+    </div>`);
+    _geoMarkers.push({marker, company: c});
+  });
+
+  // Re-apply current category filter
+  if (_geoFilter !== 'all') setGeoFilter(_geoFilter);
+
+  // Update country summary
+  const countryCount = {};
+  sponsors.forEach(c => {
+    const coord = COMPANY_COORDS[c.name];
+    if (!coord) return;
+    const city = coord.city;
+    let country = 'Other';
+    if (city.includes('USA')) country = 'USA';
+    else if (['Beijing','Qingdao','Hohhot','Dongguan','Chengdu','Singapore'].some(x => city.includes(x))) country = 'China / SE Asia';
+    else if (city.includes('UK') || city.includes('London')) country = 'UK';
+    else if (city.includes('Germany')) country = 'Germany';
+    else if (city.includes('Belgium') || city.includes('Leuven')) country = 'Belgium';
+    else if (city.includes('Saudi') || city.includes('Dhahran')) country = 'Saudi Arabia';
+    else if (city.includes('Qatar') || city.includes('Doha')) country = 'Qatar';
+    else if (city.includes('South Korea') || city.includes('Seoul')) country = 'South Korea';
+    else if (city.includes('Australia') || city.includes('Sydney')) country = 'Australia';
+    else if (city.includes('Greece') || city.includes('Athens')) country = 'Greece';
+    else if (city.includes('Italy') || city.includes('Milan')) country = 'Italy';
+    else if (city.includes('Argentina') || city.includes('Buenos Aires')) country = 'Argentina';
+    else if (city.includes('Switzerland') || city.includes('Vevey')) country = 'Switzerland';
+    else if (city.includes('Canada') || city.includes('Toronto')) country = 'Canada';
+    else if (city.includes('Russia') || city.includes('Moscow')) country = 'Russia';
+    countryCount[country] = (countryCount[country] || 0) + 1;
+  });
+  const sorted = Object.entries(countryCount).sort((a,b) => b[1]-a[1]);
+  const summaryEl = document.getElementById('geo-country-summary');
+  if (summaryEl) {
+    summaryEl.innerHTML = `<strong style="color:#333">Sponsors by HQ country (${_geoYear}):</strong> ` +
+      sorted.map(([k,v]) => `${k} <strong style="color:#111">${v}</strong>`).join(' · ');
+  }
 }
 
 function renderGeoMap() {
@@ -5614,68 +5743,7 @@ function renderGeoMap() {
     subdomains: 'abcd', maxZoom: 19
   }).addTo(_geoMap);
 
-  const sponsors2026 = DATA.companies.filter(c => c.tournament === 'FIFA World Cup 2026');
-  const feeMin = Math.min(...sponsors2026.map(c => c.fee));
-  const feeMax = Math.max(...sponsors2026.map(c => c.fee));
-  function rForFee(fee) { return 6 + (Math.sqrt(fee) - Math.sqrt(feeMin)) / (Math.sqrt(feeMax) - Math.sqrt(feeMin)) * 14; }
-
-  _geoMarkers = [];
-  sponsors2026.forEach(c => {
-    const coord = COMPANY_COORDS[c.name];
-    if (!coord) return;
-    const color = geoMarkerColor(c);
-    const csh = typeof computeCSH === 'function' ? computeCSH(c).toFixed(1) : 'N/A';
-    const harmFlags = [c.hfss?'HFSS':'', c.alc?'Alcohol':'', c.fossil?'Fossil Fuel':'', c.gamble?'Gambling':''].filter(Boolean).join(', ') || 'None';
-    const marker = L.circleMarker([coord.lat, coord.lng], {
-      radius: rForFee(c.fee),
-      fillColor: color,
-      color: '#fff',
-      weight: 1.5,
-      opacity: 1,
-      fillOpacity: 0.8
-    }).addTo(_geoMap);
-    marker.bindPopup(`<div style="font-size:13px;line-height:1.7;min-width:160px">
-      <strong>${c.name}</strong><br>
-      <span style="color:#94a3b8">${coord.city}</span><br>
-      ${c.tier}<br>
-      ${c.industry}<br>
-      Fee: ~$${c.fee}M<br>
-      Harm flags: ${harmFlags}<br>
-      CSH Score: ${csh}
-    </div>`);
-    _geoMarkers.push({marker, company: c});
-  });
-
-  // Country summary
-  const countryCount = {};
-  sponsors2026.forEach(c => {
-    const coord = COMPANY_COORDS[c.name];
-    if (!coord) return;
-    const city = coord.city;
-    let country = 'Other';
-    if (city.includes('USA')) country = 'USA';
-    else if (city.includes('China') || city.includes('Beijing') || city.includes('Qingdao') || city.includes('Hohhot') || city.includes('Dongguan') || city.includes('Chengdu') || city.includes('Singapore')) country = 'China / SE Asia';
-    else if (city.includes('UK') || city.includes('London')) country = 'UK';
-    else if (city.includes('Germany')) country = 'Germany';
-    else if (city.includes('Belgium')) country = 'Belgium';
-    else if (city.includes('Saudi') || city.includes('Dhahran')) country = 'Saudi Arabia';
-    else if (city.includes('Qatar') || city.includes('Doha')) country = 'Qatar';
-    else if (city.includes('South Korea') || city.includes('Seoul')) country = 'South Korea';
-    else if (city.includes('Australia') || city.includes('Sydney')) country = 'Australia';
-    else if (city.includes('Greece') || city.includes('Athens')) country = 'Greece';
-    else if (city.includes('Italy') || city.includes('Milan')) country = 'Italy';
-    else if (city.includes('Argentina') || city.includes('Buenos Aires')) country = 'Argentina';
-    else if (city.includes('Switzerland') || city.includes('Vevey')) country = 'Switzerland';
-    else if (city.includes('Canada') || city.includes('Toronto')) country = 'Canada';
-    countryCount[country] = (countryCount[country] || 0) + 1;
-  });
-  const sorted = Object.entries(countryCount).sort((a,b) => b[1]-a[1]);
-  const summaryEl = document.getElementById('geo-country-summary');
-  if (summaryEl) {
-    summaryEl.innerHTML = '<strong style="color:var(--text)">Country of HQ:</strong> ' +
-      sorted.map(([k,v]) => `${k} <strong style="color:var(--text)">${v}</strong>`).join(' · ');
-  }
-
+  _geoRedrawMarkers();
   setTimeout(() => _geoMap.invalidateSize(), 200);
 
   // set filter UI
