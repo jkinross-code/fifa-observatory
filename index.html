@@ -1484,12 +1484,12 @@
     </div>
 
     <div class="card" style="padding:0;overflow:hidden;position:relative">
-      <svg id="sponsor-network-svg" style="width:100%;height:600px;background:var(--bg2);display:block"></svg>
+      <svg id="sponsor-network-svg" style="width:100%;height:600px;background:#f8fafc;display:block"></svg>
       <!-- Zoom controls -->
       <div style="position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:4px;z-index:10">
-        <button onclick="netZoom(1.3)" title="Zoom in" style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">+</button>
-        <button onclick="netZoom(0.77)" title="Zoom out" style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">−</button>
-        <button onclick="netZoomReset()" title="Reset zoom" style="width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">↺</button>
+        <button onclick="netZoom(1.3)" title="Zoom in" style="width:32px;height:32px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;color:#1e293b;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">+</button>
+        <button onclick="netZoom(0.77)" title="Zoom out" style="width:32px;height:32px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;color:#1e293b;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">−</button>
+        <button onclick="netZoomReset()" title="Reset zoom" style="width:32px;height:32px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;color:#64748b;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">↺</button>
       </div>
       <div id="network-tooltip" style="display:none;position:fixed;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text);pointer-events:none;z-index:9999;max-width:240px;line-height:1.6"></div>
     </div>
@@ -5526,7 +5526,7 @@ function renderSponsorNetwork() {
     .data(allNodes).enter().append('text')
     .attr('class', 'net-label')
     .attr('font-size', d => d.layer === 'local' ? 9 : 10)
-    .attr('fill', d => d.layer === 'kit' ? '#c4b5fd' : d.layer === 'local' ? '#6ee7b7' : 'var(--text2)')
+    .attr('fill', d => d.layer === 'kit' ? '#7c3aed' : d.layer === 'local' ? '#059669' : '#1e293b')
     .attr('text-anchor', 'middle')
     .attr('dy', d => nodeR(d) + 12)
     .style('pointer-events', 'none')
