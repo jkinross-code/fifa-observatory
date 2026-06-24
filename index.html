@@ -1551,6 +1551,8 @@
             <button id="geo-filter-fossil" onclick="setGeoFilter('fossil')" style="padding:5px 14px;border-radius:20px;border:1px solid #6b7280;background:transparent;color:#9ca3af;font-size:12px;cursor:pointer">Fossil Fuel</button>
             <button id="geo-filter-gamble" onclick="setGeoFilter('gamble')" style="padding:5px 14px;border-radius:20px;border:1px solid #ec4899;background:transparent;color:#ec4899;font-size:12px;cursor:pointer">Gambling</button>
             <button id="geo-filter-tech" onclick="setGeoFilter('tech')" style="padding:5px 14px;border-radius:20px;border:1px solid #3b82f6;background:transparent;color:#3b82f6;font-size:12px;cursor:pointer">Tech/Neutral</button>
+            <span style="width:1px;height:22px;background:var(--border);margin:0 4px"></span>
+            <label style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" checked onchange="toggleGeoTeams(this)"> Show participating nations</label>
           </div>
           <div class="card" style="padding:0;overflow:hidden">
             <div id="geo-map" style="height:520px;width:100%;background:var(--bg2)"></div>
@@ -1565,6 +1567,11 @@
               <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#3b82f6;margin-right:4px"></span>Tech/Neutral</span>
               <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#64748b;margin-right:4px"></span>Other</span>
               <span style="color:var(--text3);margin-left:8px">Circle size = sponsorship fee</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:11px;color:var(--text2);margin-bottom:14px;padding-top:10px;border-top:1px solid var(--border)">
+              <span style="font-weight:600;color:var(--text2)">Participating nations:</span>
+              <span><span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:rgba(16,185,129,0.55);border:2px solid #047857;margin-right:4px;vertical-align:middle"></span>Host / co-host</span>
+              <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:rgba(59,130,246,0.30);border:1px solid #1d4ed8;margin-right:4px;vertical-align:middle"></span>Qualified team</span>
             </div>
             <div id="geo-country-summary" style="font-size:12px;color:var(--text2);line-height:1.8"></div>
           </div>
@@ -5824,6 +5831,28 @@ function renderSponsorNetwork() {
 
 // ===== GLOBAL MAP =====
 
+// Approximate country centroids (ISO3 → lat/lng) for all WC_TEAMS participants 2006–2026.
+// Used to highlight participating nations on the Global Map per tournament year.
+const COUNTRY_CENTROIDS = {
+  AGO:{lat:-11.2,lng:17.9}, ARG:{lat:-38.4,lng:-63.6}, AUS:{lat:-25.3,lng:133.8}, AUT:{lat:47.5,lng:14.6},
+  BEL:{lat:50.5,lng:4.5}, BIH:{lat:43.9,lng:17.7}, BRA:{lat:-14.2,lng:-51.9}, CAN:{lat:56.1,lng:-106.3},
+  CHE:{lat:46.8,lng:8.2}, CHL:{lat:-35.7,lng:-71.5}, CIV:{lat:7.5,lng:-5.5}, CMR:{lat:7.4,lng:12.4},
+  COD:{lat:-4.0,lng:21.8}, COL:{lat:4.6,lng:-74.3}, CPV:{lat:16.0,lng:-24.0}, CRI:{lat:9.7,lng:-83.8},
+  CUW:{lat:12.2,lng:-69.0}, CZE:{lat:49.8,lng:15.5}, DEU:{lat:51.2,lng:10.4}, DNK:{lat:56.3,lng:9.5},
+  DZA:{lat:28.0,lng:1.7}, ECU:{lat:-1.8,lng:-78.2}, EGY:{lat:26.8,lng:30.8}, ESP:{lat:40.5,lng:-3.7},
+  FRA:{lat:46.2,lng:2.2}, GBR:{lat:55.4,lng:-3.4}, GHA:{lat:7.9,lng:-1.0}, GRC:{lat:39.1,lng:21.8},
+  HND:{lat:15.2,lng:-86.2}, HRV:{lat:45.1,lng:15.2}, HTI:{lat:19.0,lng:-72.3}, IRN:{lat:32.4,lng:53.7},
+  IRQ:{lat:33.2,lng:43.7}, ISL:{lat:64.9,lng:-19.0}, ITA:{lat:41.9,lng:12.6}, JOR:{lat:30.6,lng:36.2},
+  JPN:{lat:36.2,lng:138.3}, KOR:{lat:35.9,lng:127.8}, MAR:{lat:31.8,lng:-7.1}, MEX:{lat:23.6,lng:-102.6},
+  NGA:{lat:9.1,lng:8.7}, NLD:{lat:52.1,lng:5.3}, NOR:{lat:60.5,lng:8.5}, NZL:{lat:-40.9,lng:174.9},
+  PAN:{lat:8.5,lng:-80.8}, PER:{lat:-9.2,lng:-75.0}, POL:{lat:51.9,lng:19.1}, PRK:{lat:40.3,lng:127.5},
+  PRT:{lat:39.4,lng:-8.2}, PRY:{lat:-23.4,lng:-58.4}, QAT:{lat:25.4,lng:51.2}, RUS:{lat:61.5,lng:105.3},
+  SAU:{lat:23.9,lng:45.1}, SCG:{lat:44.0,lng:21.0}, SEN:{lat:14.5,lng:-14.5}, SRB:{lat:44.0,lng:21.0},
+  SVK:{lat:48.7,lng:19.7}, SVN:{lat:46.2,lng:14.8}, SWE:{lat:60.1,lng:18.6}, TGO:{lat:8.6,lng:0.8},
+  TTO:{lat:10.7,lng:-61.2}, TUN:{lat:33.9,lng:9.6}, TUR:{lat:39.0,lng:35.2}, UKR:{lat:48.4,lng:31.2},
+  URY:{lat:-32.5,lng:-55.8}, USA:{lat:39.8,lng:-98.6}, UZB:{lat:41.4,lng:64.6}, ZAF:{lat:-30.6,lng:22.9},
+};
+
 const COMPANY_COORDS = {
   'Adidas': {lat:48.52, lng:11.00, city:'Herzogenaurach, Germany'},
   'Coca-Cola': {lat:33.77, lng:-84.39, city:'Atlanta, USA'},
@@ -5870,7 +5899,52 @@ const COMPANY_COORDS = {
 let _geoFilter = 'all';
 let _geoYear   = '2026';
 let _geoMarkers = [];
+let _geoTeamMarkers = [];
+let _geoShowTeams = true;
 let _geoMap = null;
+
+// Draw participating-nation markers for the selected tournament year.
+// Hosts/co-hosts get a distinct green ring; other participants a hollow blue dot.
+function _geoDrawTeams() {
+  if (!_geoMap) return;
+  _geoTeamMarkers.forEach(m => m.remove());
+  _geoTeamMarkers = [];
+  if (!_geoShowTeams) return;
+
+  const tournamentKey = 'FIFA World Cup ' + _geoYear;
+  const tournament = (typeof WC_TEAMS !== 'undefined') ? WC_TEAMS[tournamentKey] : null;
+  if (!tournament) return;
+
+  const hostSet = new Set([tournament.host, ...(tournament.coHosts || [])].filter(Boolean));
+
+  tournament.teams.forEach(t => {
+    const c = COUNTRY_CENTROIDS[t.iso3];
+    if (!c) return;
+    const isHost = hostSet.has(t.iso3);
+    const flag = (typeof COUNTRY_FLAGS !== 'undefined' && COUNTRY_FLAGS[t.iso3]) ? COUNTRY_FLAGS[t.iso3] : '';
+    const marker = L.circleMarker([c.lat, c.lng], {
+      radius: isHost ? 11 : 6,
+      fillColor: isHost ? '#10b981' : '#3b82f6',
+      color: isHost ? '#047857' : '#1d4ed8',
+      weight: isHost ? 3 : 1.5,
+      opacity: 0.95,
+      fillOpacity: isHost ? 0.55 : 0.30,
+      pane: 'markerPane',
+    }).addTo(_geoMap);
+    marker.bindPopup(`<div style="font-size:13px;line-height:1.6;min-width:150px">
+      <strong>${flag} ${t.name}</strong>${isHost ? ' <span style="color:#047857;font-weight:700">(HOST)</span>' : ''}<br>
+      <span style="color:#555">${tournamentKey.replace('FIFA World Cup ','')} participant</span><br>
+      Group ${t.group} · FIFA rank ${t.fifaRank}<br>
+      Reached: ${t.round === 'GS' ? 'Group stage' : t.round === 'TBD' ? 'Still competing' : t.round}
+    </div>`);
+    _geoTeamMarkers.push(marker);
+  });
+}
+
+function toggleGeoTeams(cb) {
+  _geoShowTeams = cb ? cb.checked : !_geoShowTeams;
+  _geoDrawTeams();
+}
 
 function geoMarkerColor(c) {
   if (c.hfss)   return '#f97316';
@@ -5983,6 +6057,9 @@ function _geoRedrawMarkers() {
     summaryEl.innerHTML = `<strong style="color:#333">Sponsors by HQ country (${_geoYear}):</strong> ` +
       sorted.map(([k,v]) => `${k} <strong style="color:#111">${v}</strong>`).join(' · ');
   }
+
+  // Overlay participating nations for this tournament year
+  _geoDrawTeams();
 }
 
 function renderGeoMap() {
